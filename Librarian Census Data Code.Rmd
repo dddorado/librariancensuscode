@@ -1,0 +1,697 @@
+---
+title: "Librarian Census Data Code"
+author: "Dan Anthony Dorado"
+date: "`r Sys.Date()`"
+output: word_document
+toc: TRUE
+---
+# Abstract
+
+The University of the Philippines School of Library and Information Studies (UPSLIS) conducted a study of Philippine Librarians from November 2018 to October 2019.  This endeavor was the first-ever wide-scale study undertaken to collect the occupational profile of Librarians in the Philippines.  The survey was designed to be an online questionnaire via Mentimeter and was presented for dissemination during the 2018 Philippine Librarians Association Inc. (PLAI) Congress at Novotel in Quezon City.  To further disseminate, the link was posted on the UPSLIS Facebook account and was shared to library association group pages.  A total of 685 responses were recorded which is only 7.5% of the almost 9000 registered librarians in the Philippines but can be used in making statistical inference with a 4% margin of error.
+
+# About this document
+
+This paper aims to discuss the methds and process used in cleaning, visuzlizing, and processing of the **Philippine Librarian Census Dataset** *(see https://zenodo.org/record/6450452).* It details the:
+
+- R packages used
+- Data cleaning methods
+- Data wrangling methods
+- Data summarization methods
+- Data computation methods
+- Data visualization methods
+
+The researchers hope that this would provide a framework for future LIS research to be more open by sharing theirs datasets and documentation. This would allow research verification and provide an opportunity for other researchers to use different theories and approaches to shared datasets in order to promote the culture of research in the LIS field. 
+
+# R packages and dataset
+```{r}
+# Load needed package
+library(tidyverse)
+library(stringi)
+library(tm)
+library(infer)
+
+#Load the raw "librariancensus.csv" dataset
+dataset <- read_csv("librariancensus.csv")
+
+#Inspect the loaded dataset
+glimpse(dataset)
+
+#controls how many digits will be printed
+options(digits=4) 
+
+#Initialize a pseudorandom number generator to obtain the same output during simulation
+set.seed(12)
+```
+
+# Data Cleaning, Wrangling, and Visualization
+
+## Question: Are you currently a licensed librarian (R.A. 9246) ?
+
+- Yes, I have a valid and up-to-date PRC license for librarians
+- No, I have not renewed my license
+- No, I have never taken any licensure examination for librarians and/or never applied for a PRC license for librarians
+
+```{r}
+# Change the factor type
+dataset$licensed <- as.factor(dataset$licensed)
+# Recode responses
+dataset$licensed <- fct_recode(dataset$licensed, "Licensed librarian" = "Yes, I have a valid and up-to-date PRC license for librarians", "Librarian with unrenewed license" = "No, I have not renewed my license",  "Non-licensed librarian" = "No, I have never taken any licensure examination for librarians and/or never applied for a PRC license for librarians")
+# Rearrange the responses
+dataset$licensed <- factor(dataset$licensed, levels = c("Licensed librarian", "Librarian with unrenewed license", "Non-licensed librarian"))
+# Graph the data
+dataset %>%
+filter(!is.na(licensed)) %>%
+ggplot(aes(x = licensed, fill = licensed)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: PRC License", "n=660") + guides(fill = "none") + scale_fill_viridis_d()
+```
+
+## Question: Are you currently residing in the Philippines?
+
+- Yes, I am currently residing and staying in the Philippines
+- No, I am in the Philippines right now but only for vacation
+- No, I am currently residing outside the Philippines
+
+```{r}
+# Change the factor type
+dataset$philippines <- as.factor(dataset$philippines)
+# Recode responses
+dataset$philippines <- fct_recode(dataset$philippines, "Residing in the Philippines" = "Yes, I am currently residing and staying in the Philippines", "Residing outside of the Philippines" = "No, I am in the Philippines right now but only for vacation", "Residing outside of the Philippines" = "No, I am currently residing outside the Philippines")
+# Rearrange the responses
+dataset$philippines <- factor(dataset$philippines, levels = c("Residing in the Philippines", "Residing outside of the Philippines"))
+# Graph the data
+dataset %>%
+filter(!is.na(philippines)) %>%
+ggplot(aes(x = philippines, fill = philippines)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Residency", "n=658") + guides(fill = "none") + scale_fill_viridis_d()
+```
+
+## Question: Kindly indicate which gender you identify the most
+
+- Man
+- Woman
+- LGBTQ+
+- Prefer not to say
+
+```{r}
+# Change the factor type
+dataset$gender <- as.factor(dataset$gender)
+# Recode responses
+dataset$gender <- fct_recode(dataset$gender, "With diverse SOGIE" = "LGBTQ+", "Male" = "Man", "Female" = "Woman")
+# Rearrange the responses
+dataset$gender <- factor(dataset$gender, levels = c("Female", "Male", "With diverse SOGIE", "Prefer not to say"))
+# Graph the data
+dataset %>%
+filter(!is.na(gender)) %>%
+ggplot(aes(x = gender, fill = gender)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Gender", "n=660") + guides(fill = "none") + scale_fill_viridis_d()
+```
+
+## Question: Kindly indicate your age
+
+```{r}
+# Inspect the responses
+summary(dataset$age)
+```
+
+
+```{r}
+# Create a new column: age_group
+age_group <- cut(dataset$age, c(20,30,40,50,60,70,80), right = FALSE)
+# Attach age_group to dataset
+dataset <- cbind(dataset, age_group)
+# Recode responses
+dataset$age_group <- fct_recode(dataset$age_group, "21-30" = '[20,30)', "31-40" = '[30,40)', "41-50" = '[40,50)', "51-60" = '[50,60)', "Greater than 60" = '[60,70)', "Greater than 60" = '[70,80)' )
+# Graph the data: bar graph
+dataset %>%
+filter(!is.na(age_group)) %>%
+ggplot(aes(x = age_group, fill = age_group)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Age", "n=656") + guides(fill = "none") + scale_fill_viridis_d()
+```
+
+```{r}
+# Graph the data: histogram
+dataset %>%
+filter(!is.na(age)) %>%
+filter(age > 20) %>%
+filter(age < 90) %>%
+ggplot(aes(x = age, fill = age)) + geom_histogram(bins = 8) + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Age", "n=647") + guides(fill = "none") + scale_fill_viridis_d()
+```
+
+```{r}
+# Graph the data: boxplot + violin plot + dot plot
+dataset %>%
+filter(!is.na(age)) %>%
+filter(age > 20) %>%
+filter(age < 90) %>%
+ggplot(aes(x = 1, y = age)) + geom_violin(adjust=.7) + geom_boxplot(width = .1, fill = "black") + geom_dotplot(aes(y = age), binaxis = "y", binwidth = .5, stackdir = "center", alpha = .5) + stat_summary(fun = mean, geom = "point", fill = "white", shape = 21, size = 2.5) + coord_flip() + theme(axis.text.y = element_blank()) + xlab("Distribution") + ylab("Age") + ggtitle("Distribution of Responses: Age(Boxplot)", "n=647")
+```
+
+## Question: Are you currently employed and/or working?
+
+- Yes, I am currently employed by an institution, agency, individual or similar.
+- Yes, I am currently self-employed and/or doing freelance and consultancy work.
+- No, I am currently not working for reasons other than retirement.
+- No, I am a retiree.
+
+```{r}
+# Change the factor type
+dataset$working <- as.factor(dataset$working)
+# Recode responses
+dataset$working <- fct_recode(dataset$working, "Retired" = 'No, I am a retiree.', "Not working" = 'No, I am currently not working for reasons other than retirement.', "Employed" = 'Yes, I am currently employed by an institution, agency, individual or similar.', "Self-employed" = 'Yes, I am currently self-employed and/or doing freelance and consultancy work.')
+# Rearrange the responses
+dataset$working <- factor(dataset$working, levels = c('Employed', 'Not working', 'Self-employed', 'Retired'))
+# Graph the data
+dataset %>%
+filter(!is.na(working)) %>%
+ggplot(aes(x = working, fill = working)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Currently Working", "n=658") + guides(fill = "none") + scale_fill_viridis_d()
+```
+
+## Question: Kindly indicate the setting, field or industry you are primarily working in
+- library
+- archives and/or records management
+- academic institution (non-librarian position)
+- information technology, computer science, software / database engineering and other similar line of work
+- museum and heritage work
+- social services
+
+```{r}
+# Change the factor type
+dataset$industry <- as.factor(dataset$industry)
+# Recode responses
+dataset$industry <- fct_recode(dataset$industry, "Academe" = 'academic institution (non-librarian position)',"A&RM" = 'archives and/or records management', "ICT" = 'information technology', "Library" = 'library', "Heritage Work" ='museum and heritage work', "Social Service" = 'social services')
+# Rearrange the responses
+dataset$industry <- factor(dataset$industry, levels = c('Library', 'Academe', 'A&RM', 'ICT', 'Social Service', 'Heritage Work'))
+# Graph the data
+dataset %>%
+filter(!is.na(industry)) %>%
+ggplot(aes(x = industry, fill = industry)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Industry", "n=652") + guides(fill = "none") + scale_fill_viridis_d()
+```
+
+## Question: How long have you been working as a professional after passing the licensure exam for librarians (cumulative years)
+
+```{r}
+# Inspect the responses
+summary(dataset$years_service)
+# Create a new column: years_service_group
+years_service_group <- cut(dataset$years_service, c(0,5,10,15,20,25,30,35,40), right = FALSE)
+# Attach years_service_group to dataset
+dataset <- cbind(dataset, years_service_group)
+# Recode responses
+dataset$years_service_group <- fct_recode(dataset$years_service_group, "0-4" = '[0,5)',"5-9" = '[5,10)', "10-14" = '[10,15)', "15-19" = '[15,20)', "20-24" = '[20,25)', "25-29" = '[25,30)',"30 or more" = '[30,35)', "30 or more" = '[35,40)')
+# Graph the data: bar graph
+dataset %>%
+filter(!is.na(years_service_group)) %>%
+ggplot(aes(x = years_service_group, fill = years_service_group)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Years of Service", "n=649") + guides(fill = "none") + scale_fill_viridis_d()
+```
+
+```{r}
+# Graph the data: histogram
+dataset %>%
+filter(!is.na(years_service)) %>%
+filter(years_service < 40) %>%
+ggplot(aes(x = years_service, , fill = years_service)) + geom_histogram(bins = 8) + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Years of Service", "n=649") + guides(fill = "none") + scale_fill_viridis_d()
+```
+
+```{r}
+# Graph the data: boxplot + violin plot + dot plot
+dataset %>%
+filter(!is.na(years_service)) %>%
+filter(years_service < 40) %>%
+ggplot(aes(x = 1, y = years_service)) + geom_violin(adjust=.7) + geom_boxplot(width = .1, fill = "black") + geom_dotplot(aes(y = years_service), binaxis = "y", binwidth = .3, stackdir = "center", alpha = .5) + stat_summary(fun = mean, geom = "point", fill = "white", shape = 21, size = 2.5) + coord_flip() + theme(axis.text.y = element_blank()) + xlab("Distribution") + ylab("Years of Service") + ggtitle("Distribution of Responses: Years of Service(Boxplot)", "n=649")
+```
+
+## Question: Kindly indicate the type of institution (in terms of ownership) you are primarily working in
+
+- government
+- private (in-house)
+- private (BPO)
+- non-profit
+
+```{r}
+# Change the factor type
+dataset$institution <- as.factor(dataset$institution)
+# Recode responses
+dataset$institution <- fct_recode(dataset$institution, "Government" = 'government', "NGO" = 'non-profit', "Private" = 'private (BPO)', "Private" = 'private (in-house)')
+# Rearrange the responses
+dataset$institution <- factor(dataset$institution, levels = c('Private', 'Government', 'NGO'))
+# Graph the data
+dataset %>%
+filter(!is.na(institution)) %>%
+ggplot(aes(x = institution, fill = institution)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Institution", "n=644") + guides(fill = "none") + scale_fill_viridis_d()
+```
+
+## Question: Kindly indicate your current tenure status
+
+- permanent
+- contractual
+- voluntary work
+- job order (J.O.)
+- self-employed, freelancing or working with multiple institutions
+
+```{r}
+# Change the factor type
+dataset$tenure <- as.factor(dataset$tenure)
+# Recode responses
+dataset$tenure <- fct_recode(dataset$tenure, "Contractual" = 'contractual', "Job order" = 'job order (J.O.)', "Permanent" = 'permanent', "Self-employed" = 'self-employed, freelancing or working with multiple institutions', "Volunteer" = 'voluntary work')
+# Rearrange the responses
+dataset$tenure <- factor(dataset$tenure, levels = c('Permanent', 'Contractual', 'Job order', 'Self-employed', 'Volunteer'))
+# Graph the data
+dataset %>%
+filter(!is.na(tenure)) %>%
+ggplot(aes(x = tenure, fill = tenure)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Tenure", "n=640") + guides(fill = "none") + scale_fill_viridis_d()
+```
+
+## Question: Kindly indicate your current monthly gross salary or income range (before deductions)
+
+```{r}
+# Inspect the responses
+summary(dataset$gross_salary)
+# Create a new column: gross_salary_group
+gross_salary_group <- cut(dataset$gross_salary, c(10,20,30,40,50,60,70,80,90,100), right = TRUE)
+# Attach gross_salary_group to dataset
+dataset <- cbind(dataset, gross_salary_group)
+# Recode responses
+dataset$gross_salary_group <- fct_recode(dataset$gross_salary_group, "11-20" = '(10,20]', "21-30" = '(20,30]', "31-40" = '(30,40]', "41-50" = '(40,50]', "Greater than 50k" = '(50,60]', "Greater than 50k" = '(60,70]', "Greater than 50k" = '(70,80]', "Greater than 50k" = '(80,90]', "Greater than 50k" = '(90,100]')
+# Graph the data: bar graph
+dataset %>% 
+filter(!is.na(gross_salary_group)) %>%
+ggplot(aes(x = gross_salary_group, fill = gross_salary_group)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Gross Salary", "n=563") + guides(fill = "none") + scale_fill_viridis_d()
+```
+
+```{r}
+# Graph the data: histogram
+dataset %>%
+filter(!is.na(gross_salary)) %>%
+filter(gross_salary > 10) %>%
+ggplot(aes(x = gross_salary, fill = gross_salary)) + geom_histogram(bins = 8) + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Gross Salary", "n=509") + guides(fill = "none") + scale_fill_viridis_d()
+```
+
+```{r}
+# Graph the data: boxplot + violin plot + dot plot
+dataset %>%
+filter(!is.na(gross_salary)) %>%
+filter(gross_salary > 10) %>%
+ggplot(aes(x = 1, y = gross_salary)) + geom_violin(adjust=2) + geom_boxplot(width = .1, fill = "black") + geom_dotplot(aes(y = gross_salary), binaxis = "y", binwidth = .9, stackdir = "center", alpha = .5) + stat_summary(fun = mean, geom = "point", fill = "white", shape = 21, size = 2.5) + coord_flip() + theme(axis.text.y = element_blank()) + xlab("Distribution") + ylab("Gross Salary") + ggtitle("Distribution of Responses: Gross Salary(Boxplot)", "n=509")
+```
+
+## Kindly indicate your current monthly net salary or income range (after deductions)
+
+```{r}
+# Inspect the responses
+summary(dataset$net_salary)
+# Create a new column: gross_salary_group
+net_salary_group <- cut(dataset$net_salary, c(10,20,30,40,50,60,70,80,90,100), right = TRUE)
+# Attach net_salary_group to dataset
+dataset <- cbind(dataset, net_salary_group)
+# Recode responses
+dataset$net_salary_group <- fct_recode(dataset$net_salary_group, "11-20" = '(10,20]', "21-30" = '(20,30]', "31-40" = '(30,40]', "41-50" = '(40,50]', "Greater than 50k" = '(50,60]', "Greater than 50k" = '(60,70]', "Greater than 50k" = '(70,80]', "Greater than 50k" = '(80,90]', "Greater than 50k" = '(90,100]')
+# Graph the data: bar graph
+dataset %>%
+filter(!is.na(net_salary_group)) %>%
+ggplot(aes(x = net_salary_group, fill = net_salary_group)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Net Salary", "n=551") + guides(fill = "none") + scale_fill_viridis_d()
+```
+
+```{r}
+# Graph the data: bar graph
+dataset %>%
+filter(!is.na(net_salary)) %>%
+filter(net_salary > 10) %>%
+ggplot(aes(x = net_salary, fill = net_salary)) + geom_histogram(bins = 11) + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Net Salary", "n=447") + guides(fill = "none") + scale_fill_viridis_d()
+```
+
+```{r}
+# Graph the data: boxplot + violin plot + dot plot
+dataset %>%
+filter(!is.na(net_salary)) %>%
+filter(net_salary > 10) %>%
+ggplot(aes(x = 1, y = net_salary)) + geom_violin(adjust=2) + geom_boxplot(width = .1, fill = "black") + geom_dotplot(aes(y = net_salary), binaxis = "y", binwidth = .9, stackdir = "center", alpha = .5) + stat_summary(fun = mean, geom = "point", fill = "white", shape = 21, size = 2.5) + coord_flip() + theme(axis.text.y = element_blank()) + xlab("Distribution") + ylab("Net Salary") + ggtitle("Distribution of Responses: Net Salary(Boxplot)", "n=447")
+```
+
+## Question: Kindly indicate additional benefits, if any (please check all that apply)
+
+- free shuttle service
+- night differential pay
+- paid vacation and/or sick leaves
+- health card and/or insurance other than PhilHealth
+- monetary allowances
+- NONE / Not Applicable
+
+```{r}
+# Combine columns: benefits1, benefits2, benefits3, benefits4, benefits5
+dataset$benefits <- paste(dataset$benefits1, dataset$benefits2, dataset$benefits3, dataset$benefits4, dataset$benefits5)
+#Create new columns: shuttle, night_differential, paid_leaves, hmo, allowances, no_benefits
+dataset <- transform(dataset, shuttle = grepl("shuttle", benefits), night_differential = grepl("night", benefits), paid_leaves = grepl("leaves", benefits), hmo = grepl("insurance", benefits), allowances = grepl("allowances", benefits), no_benefits = grepl("NONE", benefits))
+# Summarize by counting the TRUE values per benefits
+dataset %>%
+summarise("Shuttle service" = sum(shuttle == TRUE), "Night differential" = sum(night_differential == TRUE), "Paid leaves" = sum(paid_leaves == TRUE), "HMO" = sum(hmo == TRUE), "Allowances" = sum(allowances == TRUE), "No benefits" = sum(no_benefits == TRUE)) %>%
+gather() %>%
+ggplot(aes(x = key, y = value, fill = key)) + geom_col(position = "dodge") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Benefits", "n=631") + guides(fill = "none") + scale_fill_viridis_d() + theme(axis.text.x = element_text(angle = 90)) +
+geom_text(x = 1, y = 254, label = "244", colour = "black", size = 4) + 
+geom_text(x = 2, y = 269, label = "259", family = "serif", colour = "black", size = 4) +
+geom_text(x = 3, y = 38, label = "28", family = "serif", colour = "black", size = 4) +
+geom_text(x = 4, y = 124, label = "114", family = "serif", colour = "black", size = 4) +
+geom_text(x = 5, y = 463, label = "453", family = "serif", colour = "black", size = 4) +
+geom_text(x = 6, y = 46, label = "36", family = "serif", colour = "black", size = 4)
+```
+
+```{r}
+# Change the factor type
+dataset$benefits1 <- as.factor(dataset$benefits1)
+# Recode responses
+dataset$benefits6 <- fct_recode(dataset$benefits1, "With Benefits" = 'free shuttle service', "With Benefits" = 'health card and/or insurance other than PhilHealth', "With Benefits" = 'monetary allowances', "With Benefits" = 'night differential pay', "Without Benefits" = 'NONE / Not Applicable', "With Benefits" = 'paid vacation and/or sick leaves')
+# Rearrange the responses
+dataset$benefits6 <- factor(dataset$benefits6, levels = c('With Benefits', 'Without Benefits'))
+# Graph the data
+dataset %>%
+filter(!is.na(benefits6)) %>%
+ggplot(aes(x = benefits6, fill = benefits6)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Benefits", "n=631") + guides(fill = "none") + scale_fill_viridis_d()
+```
+
+## Question: Other benefits not mentioned in the previous page
+
+```{r}
+# Create a clean_corpus function 
+clean_corpus <- function(corpus) {
+    corpus <- tm_map(corpus, removePunctuation)
+    corpus <- tm_map(corpus, removeNumbers)
+    corpus <- tm_map(corpus, content_transformer(tolower))
+    corpus <- tm_map(corpus, removeWords, c(stopwords("en")))
+    corpus <- tm_map(corpus, stripWhitespace)
+    return(corpus)
+}
+# Create a text dataset
+benefits.text <- paste(dataset$otherbenefits1, dataset$otherbenefits2, dataset$otherbenefits3, dataset$otherbenefits4)
+# Create a text corpus
+benefit.corpus <- benefits.text %>%
+VectorSource() %>%
+VCorpus()
+# Clean the created corpus
+benefit.corpus <- clean_corpus(benefit.corpus)
+# Create a dendogram
+benefit.corpus %>%
+TermDocumentMatrix() %>%
+removeSparseTerms(sparse = 0.98) %>%
+as.matrix() %>%
+dist() %>%
+hclust() %>%
+plot()
+```
+
+## Question: What kind of materials are you currently working with? Kindly check all that applies.
+
+- hardcopy theses and dissertations
+- hardcopy books / pamphlets / etc
+- electronic material (digital titles, digital archives, etc)
+- law materials and resources
+- archives (physical)
+- data sets
+- institutional files and records
+- NA
+
+```{r}
+# Combine columns: materials1, materials2, materials3, materials4, materials5, materials6, materials7
+dataset$materials <- paste(dataset$materials1, dataset$materials2, dataset$materials3, dataset$materials4, dataset$materials5, dataset$materials6, dataset$materials7)
+# Create new columns: theses, books, electronic_materials, law_materials, datasets, institutional_files
+dataset <- transform(dataset, theses = grepl("theses", materials), books = grepl("books", materials), electronic_materials = grepl("electronic", materials), law_materials = grepl("law", materials), datasets = grepl("data sets", materials), archives = grepl("archives", materials), institutional_files = grepl("institutional files and records", materials))
+# Summarize by counting the TRUE values per materials
+dataset %>%
+summarise("These" = sum(theses == TRUE), "Books" = sum(books == TRUE), "Electronic Materials" = sum( electronic_materials == TRUE), "Law Materials" = sum(law_materials == TRUE), "Datasets" = sum(datasets == TRUE), "Archives" = sum(archives == TRUE), "Institutional Materials" = sum(institutional_files == TRUE)) %>%
+gather() %>%
+ggplot(aes(x = key, y= value, fill = key)) + geom_col(position = "dodge") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Materials", "n=543") + guides(fill = "none") + scale_fill_viridis_d() + theme(axis.text.x = element_text(angle = 90)) +
+geom_text(x = 1, y = 298, label = "288", colour = "black", size = 4) + 
+geom_text(x = 2, y = 459, label = "449", colour = "black", size = 4) + 
+geom_text(x = 3, y = 66, label = "56", colour = "black", size = 4) +
+geom_text(x = 4, y = 273, label = "263", colour = "black", size = 4) +
+geom_text(x = 5, y = 233, label = "223", colour = "black", size = 4) +
+geom_text(x = 6, y = 75, label = "65", colour = "black", size = 4) +
+geom_text(x = 7, y = 304, label = "294", colour = "black", size = 4)
+```
+
+## Question: Kindly indicate your current work position
+
+- entry level / junior staff
+- regular / senior staff (non-supervisory)
+- supervisory / mid-management level
+- upper management level / top tier executive
+- consultant / freelancer / self-employed
+
+```{r}
+# Change the factor type
+dataset$position <- as.factor(dataset$position)
+# Recode responses
+dataset$position <- fct_recode(dataset$position, "Self-employed" =  'consultant / freelancer / self-employed', "Junior level" =  'entry level / junior staff', "Senior level" =  'regular / senior staff (non-supervisory)', "Supervisory" =  'supervisory / mid-management level', "Management" =  'upper management level / top tier executive')
+# Graph the data
+dataset %>%
+filter(!is.na(position)) %>%
+ggplot(aes(x = position, fill = position)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Position", "n=579") + guides(fill = "none") + scale_fill_viridis_d()
+```
+
+## Question: Within the next five (5) years, do you see your self working in the same industry?
+
+- Yes
+- No (planning to shift to other fields or industry)
+- Maybe / Undecided
+
+```{r}
+# Change the factor type
+dataset$fiveyears <- as.factor(dataset$fiveyears)
+# Recode responses
+dataset$fiveyears <- fct_recode(dataset$fiveyears, "Undecided" = 'Maybe / Undecided', "No" = 'No (planning to shift to other fields or industry)', "Yes" = 'Yes')
+# Rearrange the responses
+dataset$fiveyears <- factor(dataset$fiveyears, levels = c('Yes', 'Undecided', 'No'))
+# Graph the data
+dataset %>%
+filter(!is.na(fiveyears)) %>%
+ggplot(aes(x = fiveyears, fill = fiveyears)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: 5-year plan", "n=586") + guides(fill = "none") + scale_fill_viridis_d()
+```
+
+## Question: If your answer was NO or MAYBE in the previous page, indicate the field you wish to pursue
+
+```{r}
+# Create a clean_corpus function 
+clean_corpus <- function(corpus) {
+    corpus <- tm_map(corpus, removePunctuation)
+    corpus <- tm_map(corpus, removeNumbers)
+    corpus <- tm_map(corpus, content_transformer(tolower))
+    corpus <- tm_map(corpus, removeWords, c(stopwords("en"), "none", "yes", "like", "library", "librarianship", "want", "work"))
+    corpus <- tm_map(corpus, stripWhitespace)
+    return(corpus)
+}
+# Create a text corpus
+fiveyearplan.corpus <- dataset$pursue %>%
+VectorSource() %>%
+VCorpus()
+# Clean the created corpus
+fiveyearplan.corpus <- clean_corpus(fiveyearplan.corpus)
+# Create a dendogram
+fiveyearplan.corpus %>%
+TermDocumentMatrix() %>%
+removeSparseTerms(sparse = 0.995) %>%
+as.matrix() %>%
+dist() %>%
+hclust() %>%
+plot()
+```
+
+## Question: Kindly indicate your highest educational attainment
+
+- High School
+- Bachelor’s degree (BLIS)
+- Bachelor’s degree (non-BLIS)
+- Master’s degree (MLIS)
+- Master’s degree (non-MLIS)
+- Juris Doctor / Bachelor of Laws
+- Doctor of Philosophy (Ph.D)
+
+```{r}
+# Change the factor type
+dataset$education <- as.factor(dataset$education)
+# Recode responses
+levels(dataset$education)[1] <- "Bachelor degree"
+levels(dataset$education)[2] <- "BLIS"
+levels(dataset$education)[3] <- "MLIS"
+levels(dataset$education)[4] <- "Master degree"
+levels(dataset$education)[5] <- "Ph.D"
+levels(dataset$education)[6] <- "Juris Doctor"
+# Rearrange the responses
+dataset$education <- fct_relevel(dataset$education, 'BLIS', 'Bachelor degree', 'MLIS', 'Master degree', 'Ph.D', 'Juris Doctor')
+# Graph the data
+dataset %>%
+filter(!is.na(education)) %>%
+ggplot(aes(x = education, fill = education)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Highest Educational Attainment", "n=581") + guides(fill = "none") + scale_fill_viridis_d()
+```
+
+## Question: Are you currently enrolled in formal studies? (Short Courses, Certificate Program, Diploma Program, Master Program, PhD)
+
+- Yes
+- No
+
+```{r}
+# Change the factor type
+dataset$enrolled <- as.factor(dataset$enrolled)
+# Recode responses
+levels(dataset$enrolled)[1] <- "No"
+# Rearrange the responses
+dataset$enrolled <- fct_relevel(dataset$enrolled, 'Yes', 'No')
+# Graph the data
+dataset %>%
+filter(!is.na(enrolled)) %>%
+ggplot(aes(x = enrolled, fill = enrolled)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Currently Enroled", "n=580") + guides(fill = "none") + scale_fill_viridis_d()
+```
+
+## Question: If your answer was YES, indicate the degree you are currently completing
+
+- Short | Certificate | Diploma Program
+- Bachelor’s degree (BLIS)
+- Master’s degree (MLIS)
+- Master’s degree (non-MLIS)
+- Juris Doctor / Bachelor of Laws
+- Doctor of Philosophy (Ph.D)
+- Post-graduate Certificate or Diploma (LIS)
+- Post-graduate Certificate or Diploma (non-LIS)
+
+```{r}
+# Change the factor type
+dataset$completing <- as.factor(dataset$completing)
+# Recode responses
+levels(dataset$completing)[1] <- "BLIS"
+levels(dataset$completing)[2] <- "Masters non-MLIS"
+levels(dataset$completing)[3] <- "MLIS"
+levels(dataset$completing)[4] <- "Ph.D."
+levels(dataset$completing)[5] <- "Juris Doctor"
+levels(dataset$completing)[6] <- "Post Graduate LIS"
+levels(dataset$completing)[7] <- "Post Graduate non-LIS"
+levels(dataset$completing)[8] <- "Short Course"
+# Rearrange the responses
+dataset$completing <- factor(dataset$completing, levels = c("Short Course", "BLIS", "MLIS", "Masters non-MLIS", "Ph.D.", "Juris Doctor", "Post Graduate LIS", "Post Graduate non-LIS"))
+# Graph the data
+dataset %>%
+filter(!is.na(completing)) %>%
+ggplot(aes(x = completing, fill = completing)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Current Enrollment", "n=287") + guides(fill = "none") + theme(axis.text.x = element_text(angle = 90)) + scale_fill_viridis_d()
+```
+
+## Question: Are you planning to study again in a formal university setting within the next five (5) years?
+
+- Yes
+- No
+- Maybe
+
+```{r}
+# Change the factor type
+dataset$study_again <- as.factor(dataset$study_again)
+# Rearrange the responses
+dataset$study_again <- factor(dataset$study_again, levels = c("Yes", "Maybe", "No"))
+# Graph the data
+dataset %>%
+filter(!is.na(study_again)) %>%
+ggplot(aes(x = study_again, fill = study_again)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Current Enrollment", "n=574") + guides(fill = "none") + scale_fill_viridis_d()
+```
+
+## Question: If your answer was YES, kindly provide the degree you wish to study within the next five (5) years
+
+- Short | Certificate | Diploma Program
+- Bachelor’s degree (BLIS)
+- Master’s degree (MLIS)
+- Master’s degree (non-MLIS)
+- Juris Doctor / Bachelor of Laws
+- Doctor of Philosophy (Ph.D)
+- Post-graduate Certificate or Diploma (LIS)
+- Post-graduate Certificate or Diploma (non-LIS)
+
+```{r}
+# Change the column name of '5yearsdegree'
+colnames(dataset)[40] <- "after5years"
+# Change the factor type
+dataset$after5years <- as.factor(dataset$after5years)
+# Recode responses
+levels(dataset$after5years)[1] <- "Master non-MLIS"
+levels(dataset$after5years)[2] <- "MLIS"
+levels(dataset$after5years)[3] <- "Ph.D."
+levels(dataset$after5years)[4] <- "Juris Doctor"
+levels(dataset$after5years)[5] <- "Post Graduate LIS"
+levels(dataset$after5years)[6] <- "Post Graduate non-LIS"
+levels(dataset$after5years)[7] <- "Short Course"
+# Rearrange the responses
+dataset$after5years <- factor(dataset$after5years, levels = c("Short Course", "MLIS", "Master non-MLIS", "Ph.D.", "Juris Doctor", "Post Graduate LIS", "Post Graduate non-LIS"))
+# Graph the data
+dataset %>%
+filter(!is.na(after5years)) %>%
+ggplot(aes(x = after5years, fill = after5years)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Current Enrollment", "n=431") + guides(fill = "none") + theme(axis.text.x = element_text(angle = 90)) + scale_fill_viridis_d()
+```
+
+## Question: Where do you usually acquire your CPD trainings in LIS? Kindly check all that applies
+
+- within the work place (in-house trainings)
+- government facilitated trainings and symposiums
+- trainings and symposiums facilitated by private entities, individuals and/or corporations
+- NA (Have not attended CPD Trainings yet)
+
+```{r}
+# Combine columns: cpd1, cpd2, cpd3, cpd4
+dataset$cpd <- paste(dataset$cpd1, dataset$cpd2, dataset$cpd3, dataset$cpd4)
+# Create new columns: inhouse, government, private, xattended
+dataset <- transform(dataset, inhouse = grepl("within the work place", cpd), government = grepl("government", cpd), private = grepl("private", cpd), xattended = grepl("attended", cpd))
+# Summarize by counting the TRUE values per materials
+dataset %>%
+summarise("in-house trainings" = sum(inhouse == TRUE), "government facilitated" = sum(government == TRUE), "private entities" = sum(private == TRUE), "Have not attended CPD Trainings" = sum(xattended == TRUE)) %>%
+gather() %>%
+ggplot(aes(x = key, y= value, fill = key)) + geom_col(position = "dodge") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: CPD Training", "n=563") + guides(fill = "none") + scale_fill_viridis_d() + theme(axis.text.x = element_text(angle = 90)) +
+geom_text(x = 1, y = 199, label = "189", colour = "black", size = 4) + 
+geom_text(x = 2, y = 103, label = "93", colour = "black", size = 4) + 
+geom_text(x = 3, y = 168, label = "158", colour = "black", size = 4) +
+geom_text(x = 4, y = 434, label = "424", colour = "black", size = 4)
+```
+
+## Where do you usually get funding or support for your trainings in LIS?
+
+- from the work place (private sponsorship)
+- from the government (scholarships, free trainings and seminars, etc)
+- personal funding (personally attended trainings and symposiums and shouldered most of the expenses)
+- NA (Have not attended CPD Trainings yet)
+
+```{r}
+# Combine columns: cpdsupport1, cpdsupport2, cpdsupport3
+dataset$cpdsupport <- paste(dataset$cpdsupport1, dataset$cpdsupport2, dataset$cpdsupport3)
+# Create new columns: support_inhouse, sgovernment, sprivate, sxattended
+dataset <- transform(dataset, support_self = grepl("personal", cpdsupport), support_government = grepl("government", cpdsupport), support_private = grepl("private", cpdsupport), support_xattended = grepl("attended", cpdsupport))
+# Summarize by counting the TRUE values per materials
+dataset %>%
+summarise("personal funding" = sum(support_self == TRUE), "government facilitated" = sum(support_government == TRUE), "private entities" = sum(support_private == TRUE), "Have not attended CPD Trainings" = sum(support_xattended == TRUE)) %>%
+gather() %>%
+ggplot(aes(x = key, y= value, fill = key)) + geom_col(position = "dodge") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: CPD Support", "n=563") + guides(fill = "none") + scale_fill_viridis_d() + theme(axis.text.x = element_text(angle = 90)) +
+geom_text(x = 1, y = 162, label = "152", colour = "black", size = 4) +
+geom_text(x = 2, y = 372, label = "362", colour = "black", size = 4) +
+geom_text(x = 3, y = 300, label = "290", colour = "black", size = 4) +
+geom_text(x = 4, y = 264, label = "254", colour = "black", size = 4)
+```
+
+## Question: Are you satisfied with the amount of CPD trainings you have attended for the last two (2) years?
+
+- Yes, the amount of trainings I received within the last two (2) years is enough.
+- No, the amount of trainings I received within the last two (2) years is not enough.
+- No, the amount of trainings received within the last two (2) years is too much.
+- Maybe
+- NA (Have not attended CPD Trainings yet)
+
+```{r}
+# Change the factor type
+dataset$cpdsatisfaction <- as.factor(dataset$cpdsatisfaction)
+# Recode responses
+levels(dataset$cpdsatisfaction)[1] <- "Maybe"
+levels(dataset$cpdsatisfaction)[2] <- "Have not attended CPD Trainings"
+levels(dataset$cpdsatisfaction)[3] <- "No, not enough"
+levels(dataset$cpdsatisfaction)[4] <- "No, too much"
+levels(dataset$cpdsatisfaction)[5] <- "Yes"
+# Rearrange the responses
+dataset$cpdsatisfaction <- factor(dataset$cpdsatisfaction, levels = c("Yes", "No, not enough", "No, too much", "Maybe", "Have not attended CPD Trainings"))
+# Graph the data
+dataset %>%
+filter(!is.na(cpdsatisfaction)) %>%
+ggplot(aes(x = cpdsatisfaction, fill = cpdsatisfaction)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: CPD Satisfaction", "n=563") + guides(fill = "none") + theme(axis.text.x = element_text(angle = 90)) + scale_fill_viridis_d()
+```
+
+
+
+
+
+
+
+
+
+
