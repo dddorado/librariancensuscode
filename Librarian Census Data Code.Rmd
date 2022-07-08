@@ -23,10 +23,9 @@ This paper aims to discuss the methds and process used in cleaning, visuzlizing,
 The researchers hope that this would provide a framework for future LIS research to be more open by sharing theirs datasets and documentation. This would allow research verification and provide an opportunity for other researchers to use different theories and approaches to shared datasets in order to promote the culture of research in the LIS field. 
 
 # R packages and dataset
-```{r}
+```{r Ingress}
 # Load needed package
 library(tidyverse)
-library(stringi)
 library(tm)
 library(infer)
 
@@ -686,12 +685,722 @@ filter(!is.na(cpdsatisfaction)) %>%
 ggplot(aes(x = cpdsatisfaction, fill = cpdsatisfaction)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: CPD Satisfaction", "n=563") + guides(fill = "none") + theme(axis.text.x = element_text(angle = 90)) + scale_fill_viridis_d()
 ```
 
+## Question: Kindly indicate any challenges you encounter when fulfilling the required CPD trainings
 
+```{r}
+# Create a clean_corpus function 
+clean_corpus <- function(corpus) {
+    corpus <- tm_map(corpus, removePunctuation)
+    corpus <- tm_map(corpus, removeNumbers)
+    corpus <- tm_map(corpus, content_transformer(tolower))
+    corpus <- tm_map(corpus, removeWords, c(stopwords("en")))
+    corpus <- tm_map(corpus, stripWhitespace)
+    return(corpus)
+}
+# Create a text dataset
+cpdbarriers.text <- paste(dataset$cpdbarriers1, dataset$cpdbarriers2, dataset$cpdbarriers3)
+# Create a text corpus
+cpdbarriers.corpus <- cpdbarriers.text %>%
+VectorSource() %>%
+VCorpus()
+# Clean the created corpus
+cpdbarriers.corpus <- clean_corpus(cpdbarriers.corpus)
+# Create a dendogram
+cpdbarriers.corpus %>%
+TermDocumentMatrix() %>%
+removeSparseTerms(sparse = 0.98) %>%
+as.matrix() %>%
+dist() %>%
+hclust() %>%
+plot()
+```
 
+## Kindly indicate any topics you wish to explore in future trainings
 
+```{r}
+# Create a clean_corpus function 
+clean_corpus <- function(corpus) {
+    corpus <- tm_map(corpus, removePunctuation)
+    corpus <- tm_map(corpus, removeNumbers)
+    corpus <- tm_map(corpus, content_transformer(tolower))
+    corpus <- tm_map(corpus, removeWords, c(stopwords("en"), "library", "librarianship"))
+    corpus <- tm_map(corpus, stripWhitespace)
+    return(corpus)
+}
+# Create a text dataset
+topics.text <- paste(dataset$topics1, dataset$topics2, dataset$topics3, dataset$topics4, dataset$topics5)
+# Create a text corpus
+topics.corpus <- topics.text %>%
+VectorSource() %>%
+VCorpus()
+# Clean the created corpus
+topics.corpus <- clean_corpus(topics.corpus)
+# Create a dendogram
+topics.corpus %>%
+TermDocumentMatrix() %>%
+removeSparseTerms(sparse = 0.985) %>%
+as.matrix() %>%
+dist() %>%
+hclust() %>%
+plot()
+```
 
+## Kindly indicate your primary work location
 
+- NCR
+- Region I
+- Region II
+- CAR
+- Region III
+- Region IV
+- Region V
+- Region VI
+- Region VII
+- Region VIII
+- Region IX
+- Region X
+- Region XI
+- Region XII
+- CARAGA
+- ARMM
 
+```{r}
+# Change the factor type
+dataset$location <- as.factor(dataset$location)
+# Rearrange the responses
+dataset$location <- factor(dataset$location, levels = c( 'Region I', 'Region II', 'CAR', 'Region III', 'NCR' , 'Region IV', 'Region V', 'Region VI', 'Region VII', 'Region VIII', 'Region IX','Region X', 'Region XI', 'Region XII', 'CARAGA' ,'ARMM'))
+# Graph the data
+dataset %>%
+filter(!is.na(location)) %>%
+ggplot(aes(x = location, fill = location)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Location", "n=538") + guides(fill = "none") + theme(axis.text.x = element_text(angle = 90)) + scale_fill_viridis_d()
+```
 
+```{r}
+# Create lvm column
+dataset <- dataset %>%
+mutate(lvm = location)
+# Recode responses
+dataset$lvm <- as.factor(dataset$lvm)
+levels(dataset$lvm)[16] <- "Mindanao"
+levels(dataset$lvm)[15] <- "Mindanao"
+levels(dataset$lvm)[14] <- "Mindanao"
+levels(dataset$lvm)[13] <- "Mindanao"
+levels(dataset$lvm)[12] <- "Mindanao"
+levels(dataset$lvm)[11] <- "Mindanao"
+levels(dataset$lvm)[10] <- "Visayas"
+levels(dataset$lvm)[9] <- "Visayas"
+levels(dataset$lvm)[8] <- "Visayas"
+levels(dataset$lvm)[7] <- "Luzon"
+levels(dataset$lvm)[6] <- "Luzon"
+levels(dataset$lvm)[5] <- "NCR"
+levels(dataset$lvm)[4] <- "Luzon"
+levels(dataset$lvm)[3] <- "Luzon"
+levels(dataset$lvm)[2] <- "Luzon"
+levels(dataset$lvm)[1] <- "Luzon"
+# Graph the data
+dataset %>%
+filter(!is.na(lvm)) %>%
+ggplot(aes(x = lvm, fill = lvm)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Location", "n=538") + guides(fill = "none") + theme(axis.text.x = element_text(angle = 90)) + scale_fill_viridis_d()
+```
+
+## Question: Have you moved out of your original / permanent residence in order to work on your current work place?
+
+- Yes
+- No
+
+```{r}
+# Change the factor type
+dataset$worktravel <- as.factor(dataset$worktravel)
+# Rearrange the responses
+dataset$worktravel <- factor(dataset$worktravel, levels = c("Yes", "No"))
+# Graph the data
+dataset %>%
+filter(!is.na(worktravel)) %>%
+ggplot(aes(x = worktravel, fill = worktravel)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + guides(fill = "none") + ggtitle("Distribution of Responses: Work Location", "n=566") + scale_fill_viridis_d()
+```
+
+## Is Filipino / Tagalog your native language?
+
+- Yes
+- No
+
+```{r}
+# Change the factor type
+dataset$filipino <- as.factor(dataset$filipino)
+# Rearrange the responses
+dataset$filipino <- factor(dataset$filipino, levels = c("Yes", "No"))
+# Graph the data
+dataset %>%
+filter(!is.na(filipino)) %>%
+ggplot(aes(x = filipino, fill = filipino)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + guides(fill = "none") + ggtitle("Distribution of Responses: Filipino as First Language", "n=551") + scale_fill_viridis_d()
+```
+
+## Kindly check the local languages or dialects you can speak on a conversational level other than Filipino / Tagalog
+
+- Ilocano
+- Cebuano
+- Ilonggo
+- Kapampangan
+- Pangasinense
+- Waray
+- Bicolano
+- Others
+
+```{r}
+# Change the factor type
+dataset$dialect <- as.factor(dataset$dialect)
+# Rearrange the responses
+dataset$dialect <- factor(dataset$dialect, levels = c('Cebuano', 'Ilocano', 'Bicolano', 'Ilonggo', 'Kapampangan', 'Waray', 'Pangasinense', 'Others'))
+# Graph the data
+dataset %>%
+filter(!is.na(dialect)) %>%
+ggplot(aes(x = dialect, fill = dialect)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + guides(fill = "none") + ggtitle("Distribution of Responses: Dialect", "n=392") + scale_fill_viridis_d()
+```
+
+## Kindly indicate any foreign languages or dialects you can speak on a conversational level other than English (if any)
+
+```{r}
+# Create a clean_corpus function 
+clean_corpus <- function(corpus) {
+    corpus <- tm_map(corpus, removePunctuation)
+    corpus <- tm_map(corpus, removeNumbers)
+    corpus <- tm_map(corpus, content_transformer(tolower))
+    corpus <- tm_map(corpus, removeWords, c(stopwords("en"), "none", "can", "kankanaey"))
+    corpus <- tm_map(corpus, stripWhitespace)
+    return(corpus)
+}
+# Create a text corpus
+topics.corpus <- dataset$foreignlang %>%
+VectorSource() %>%
+VCorpus()
+# Clean the created corpus
+topics.corpus <- clean_corpus(topics.corpus)
+# Create a wordcount
+term.frequency <- topics.corpus %>%
+TermDocumentMatrix() %>%
+as.matrix() %>%
+rowSums() %>%
+sort( , decreasing=TRUE)
+term.frequency[1:10]
+```
+
+## Kindly indicate the type of library you are currently working in
+
+```{r}
+# Change the factor type
+dataset$type <- as.factor(dataset$type)
+# Recode responses
+dataset$type <- fct_recode(dataset$type, 
+"NA" = '#NAME?', 
+"NA" = '...', 
+"Academic" = 'academic', 
+"Academic" = 'Academic', 
+"Academic" = 'Academic-Special', 
+"Academic" = 'Academic - Seminary', 
+"Academic" = 'Academic (College)', 
+"Academic" = 'Academic (Government)', 
+"Academic" = 'Academic (Private-Catholic School)', 
+"Academic" = 'Academic (University)', 
+"Academic" = 'academic / private', 
+"Academic" = 'Academic and Research Library (SUC-University)', 
+"Academic" = 'academic and school', 
+"Academic" = 'Academic and school libraries', 
+"Academic" = 'academic and school library', 
+"Academic" = 'academic college library', 
+"Academic" = 'academic library', 
+"Academic" = 'Academic library', 
+"Academic" = 'Academic Library', 
+"Academic" = 'ACADEMIC LIBRARY', 
+"Academic" = 'Academic Library (Medical/Allied Health)', 
+"Academic" = 'academic library (university)', 
+"Academic" = 'Academic library / State university library', 
+"Academic" = 'Academic library in a Government Institution', 
+"Academic" = 'Academic library under LGU', 
+"Academic" = 'Academic Medical Library', 
+"Academic" = 'Academic State University', 
+"Academic" = 'academic SUCs', 
+"Academic" = 'Academic SUCs HEIs', 
+"Academic" = 'Academic.', 
+"Academic" = 'Academic/ Research Library', 
+"Academic" = 'Academic/Government Institutionalize', 
+"Special" = 'Academic/institutional archives', 
+"Academic" = 'Academic/Public Library', 
+"Academic" = 'Academic/Secondary library', 
+"Academic" = 'Academic/Special Library', 
+"Academic" = 'Alliance Graduate School Library', 
+"Academic" = 'An academic library with a 10, 000 student population. The library has 3 sub libraries aside from the main library. The main library also caters to the SHS students. Currently within the main library, the SHS collection is identified separately.', 
+"Special" = 'Archives', 
+"Special" = 'Archives or Records Management', 
+"Special" = 'Archives/Records Management', 
+"School" =  'Chinese private school', 
+"Academic" = 'college', 
+"Academic" = 'college library', 
+"Academic" = 'College library', 
+"Academic" = 'College Library', 
+"Academic" = 'College Library funded by LGU', 
+"NA" = 'Confidential', 
+"School" = 'DepEd (School) Library', 
+"School" = 'DepEd division Library', 
+"School" = 'Deped library hub', 
+"School" = 'Division library', 
+"NA" = 'Freelance', 
+"Public" = 'Government', 
+"Special" = 'Government Archives', 
+"Public" = 'Government library', 
+"Public" = 'Government Public Library', 
+"Special" = 'government special library', 
+"Academic" = 'Government/ Academic', 
+"Academic" = 'Graduate school', 
+"School" = 'High school library', 
+"Academic" = 'I am currently the audio-visual librarian of our university', 
+"School" = 'IBO K-12', 
+"School" = 'Junior High School Library', 
+"Special" = 'Law library', 
+"Special" = 'Law Library', 
+"Special" = 'Law Library (Special)', 
+"Special" = 'Law Library/Special Library', 
+"Public" = 'LGU library', 
+"Public" = 'Library Hub', 
+"School" = 'Library school', 
+"Academic" = 'LIS school', 
+"Special" = 'Media Library', 
+"Academic" =  'Medical and\r\nAllied Health Library', 
+"Academic" = 'Medical/Academic library', 
+"Special" = 'Military Library (Special academic library', 
+"Public" = 'municipal library', 
+"Public" = 'Municipal Library', 
+"Special" = 'Museum', 
+"NA" = 'n/a', 
+"NA" = 'N/A', 
+"NA" = 'NA. publishing company', 
+"NA" = 'NA. Working in a BPO', 
+"Public" = 'National', 
+"Special" = 'NGO Digital Library', 
+"NA" = 'None', 
+"NA" = 'Not applicable', 
+"Special" = 'Not in a library but in an archives', 
+"NA" = 'Not library. GOCC.', 
+"NA" = 'Not working in a library', 
+"NA" = 'Not working in a library setting', 
+"NA" = 'Not working in a library setting since two years ago', 
+"Special" = 'Not working in a library. Working in a Data Office', 
+"NA" = 'Private', "Academic" = 'Private academic/school (hybrid) library', 
+"Academic" =  'private HEI',
+"Academic" ='Privately owned libraries (academic)', 
+"Public" = 'Provincial Library.', 
+"Public" = 'Public high school library', 
+"Public" = 'public library', 
+"Public" = 'Public library', 
+"Public" = 'Public Library', 
+"Academic" = 'Public Library/ Academic', 
+"School" = 'Public school library', 
+"School" = 'Public School Library', 
+"School" = 'Public School LIbrary', 
+"School" = 'Public School Library (Deped Division Office)', 
+"Special" = 'records center', 
+"School" = 'school', 
+"School" = 'School', 
+"School" = 'School (primary and secondary)', 
+"Academic" = 'School and Academic library', 
+"Academic" = 'School and Academic Library', 
+"School" = 'school library', 
+"School" = 'School library', 
+"School" = 'School Library', 
+"School" = 'School library ( Private)', 
+"School" = 'School Library (Elementary)', 
+"School" = 'School Library (Senior High School Library)', 
+"School" = 'School library (under both DepED and TESDA)', 
+"Academic" = 'School Library and academic Library', 
+"School" = 'School library and prefer to be with the academic library soon', 
+"School" = 'School library and reading center', 
+"School" = 'School Library specifically Library Hub, a project of the Department of Education', 
+"School" = 'School library, catering exclusively junior high school students and staff', 
+"School" = 'School library.', 
+"Academic" = 'School/Academic Library', 
+"Academic" = 'School/academic library - Technical Section', 
+"School" = 'School/Public', 
+"School" = 'Secondary school library', 
+"Academic" = 'Slis', 
+"NA" = 'Spanish, bahasa', 
+"Special" = 'special', 
+"Special" = 'Special', 
+"Special" = 'Special-Public', 
+"Special" = 'Special (government law) library', 
+"Special" = 'special academic library', 
+"Special" = 'special library', 
+"Special" = 'Special library', 
+"Special" = 'Special Library', 
+"Special" = 'SPECIAL LIBRARY', 
+"Special" = 'Special Library in an Auditing Firm', 
+"Special" = 'Special library/Archives\r\nDigital records', 
+"Special" = 'Special library/Government', 
+"Special" = 'Special Public Library', 
+"Special" = 'Special/public/research library', 
+"Special" = 'Special/Research Library', 
+"Special" = 'specual libray', 
+"Academic" = 'State u', 
+"Academic" = 'State University', 
+"Academic" = 'State university library', 
+"Academic" = 'State/ Academic', 
+"Academic" = 'SUC', 
+"Academic" = 'SUC (Academic Library)', 
+"Academic" = 'SUC library', 
+"Academic" = 'SUC Library', 
+"Special" = 'University Archives', 
+"Academic" = 'University library', 
+"Academic" = 'University Library', 
+"Academic" = 'University Library - at the regional campus specializing in Law')
+# Rearrange the responses
+dataset$type <- factor(dataset$type, levels = c("Academic", "School", "Special", "Public"))
+# Graph the data
+dataset %>%
+filter(!is.na(type)) %>%
+ggplot(aes(x = type, fill = type)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + guides(fill = "none") + ggtitle("Distribution of Responses: Library Type", "n=474") + scale_fill_viridis_d()
+```
+
+## Other than being a librarian, what other roles do you serve in your institution/ organization?
+
+```{r}
+# Create a clean_corpus function 
+clean_corpus <- function(corpus) {
+    corpus <- tm_map(corpus, removePunctuation)
+    corpus <- tm_map(corpus, removeNumbers)
+    corpus <- tm_map(corpus, content_transformer(tolower))
+    corpus <- tm_map(corpus, removeWords, c(stopwords("en"), "library", "librarianship", "none", "librarian"))
+    corpus <- tm_map(corpus, stripWhitespace)
+    return(corpus)
+}
+# Create a text corpus
+roles.corpus <- dataset$roles %>%
+VectorSource() %>%
+VCorpus()
+# Clean the created corpus
+roles.corpus <- clean_corpus(roles.corpus)
+# Create a dendogram
+roles.corpus %>%
+TermDocumentMatrix() %>%
+removeSparseTerms(sparse = 0.99) %>%
+as.matrix() %>%
+dist() %>%
+hclust() %>%
+plot()
+```
+
+## Kindly indicate your current work position
+
+```{r}
+# Create a clean_corpus function 
+clean_corpus <- function(corpus) {
+    corpus <- tm_map(corpus, removePunctuation)
+    corpus <- tm_map(corpus, removeNumbers)
+    corpus <- tm_map(corpus, content_transformer(tolower))
+    corpus <- tm_map(corpus, removeWords, c(stopwords("en"),"iii", "library", "librarianship", "none", "librarian", "sole", "librarians"))
+    corpus <- tm_map(corpus, stripWhitespace)
+    return(corpus)
+}
+# Create a text corpus
+institutionposition.corpus <- dataset$institutionposition %>%
+VectorSource() %>%
+VCorpus()
+# Clean the created corpus
+institutionposition.corpus <- clean_corpus(institutionposition.corpus)
+# Create a dendogram
+institutionposition.corpus %>%
+TermDocumentMatrix() %>%
+removeSparseTerms(sparse = 0.99) %>%
+as.matrix() %>%
+dist() %>%
+hclust() %>%
+plot()
+```
+
+## Kindly indicate your primary job / designation inside the library
+
+```{r}
+# Create a clean_corpus function 
+clean_corpus <- function(corpus) {
+    corpus <- tm_map(corpus, removePunctuation)
+    corpus <- tm_map(corpus, removeNumbers)
+    corpus <- tm_map(corpus, content_transformer(tolower))
+    corpus <- tm_map(corpus, removeWords, c(stopwords("en"),"iii", "library", "librarianship", "none", "librarian", "sole", "librarians"))
+    corpus <- tm_map(corpus, stripWhitespace)
+    return(corpus)
+}
+# Create a text corpus
+primaryjob.corpus <- dataset$primaryjob %>%
+VectorSource() %>%
+VCorpus()
+# Clean the created corpus
+primaryjob.corpus <- clean_corpus(primaryjob.corpus)
+# Create a dendogram
+primaryjob.corpus %>%
+TermDocumentMatrix() %>%
+removeSparseTerms(sparse = 0.99) %>%
+as.matrix() %>%
+dist() %>%
+hclust() %>%
+plot()
+```
+
+## Kindly indicate your current / existing professional affiliations
+
+```{r}
+# Change the factor type
+dataset$affiliation <- as.factor(dataset$affiliation)
+# Recode factors
+levels(dataset$affiliation)[143] <- "PLAI, PAARL, RIzalenos Librarians Association, USTLISAA"
+levels(dataset$affiliation)[144] <- "PLAI, PAARL, RLA Rizalenos Librarians Association"
+dataset$affiliation <- fct_recode(dataset$affiliation, 
+"ALPS" = 'ALPS',
+"ASLP" = 'ASLP' ,
+"PASLI" = 'before member of PASLI and PLAI-CeLRLC' ,
+"NA" = 'Bplai' ,
+"NA" = 'CLAI' ,
+"NA" = 'DepEd' ,
+"NA" = 'Dont renew yet my membership in PLAI' ,
+"NA" = 'Haven\'t join any organization' ,
+"NA" = 'I have not yet member seen i have a license' ,
+"NA" = 'Inactive member of PLAI' ,
+"LAQUEP" = 'Laquep, Plai stlrc' ,
+"MAHLAP" = 'MAHLAP' ,
+"MAHLAP PATLS" = 'MAHLAP /PATLS /PLAI' ,
+"MAHLAP PAARL" = 'MAHLAP, PLAI, PAARL, ABCLI, PUPLSAAI, PAMJE, MLA' ,
+"NA" = 'n/a' ,
+"NA" = 'N/A' ,
+"NA" = 'Na' ,
+"NA" = 'NELAI (Nueva Ecija Librarian\'s Association, Inc.)' ,
+"PAARL" = 'NELAI,  PLAI,  PAARL' ,
+"NA" = 'none' ,
+"NA" = 'None' ,
+"NA" = 'NONE' ,
+"NA" = 'None this year.' ,
+"NA" = 'None yet' ,
+"PAARL" = 'Paarl' ,
+"PAARL" = 'PAARL' ,
+"PAARL PASLI" = 'PAARL, PASLI' ,
+"PAARL" = 'paarl, plai' ,
+"PAARL" = 'PAARL, PLAI' ,
+"PAARL PATLS" = 'PAARL, PLAI, PATLS, CODHLIS' ,
+"PASLI" = 'PADLI' ,
+"PASLI" = 'Pasli' ,
+"PASLI" = 'PASLI' ,
+"PASLI" = 'PASLI, PLAI' ,
+"PASLI" = 'PASLI, PLAI, MUNPARLAS' ,
+"PASLI" = 'PASLI, PNULISAA' ,
+"PATLS" = 'PATLS' ,
+"NA" = 'PLA' ,
+"NA" = 'plai' ,
+"NA" = 'Plai' ,
+"NA" = 'PLAI' ,
+"NA" = 'PLAI-CARAGA' ,
+"NA" = 'PLAI-Caraga, CLLA, MINLA, MISORLA' ,
+"NA" = 'PLAI-Davao' ,
+"NA" = 'PLAI-IRLC' ,
+"PAARL PATLS" = 'PLAI \r\nPAARL\r\nPATLS' ,
+"MAHLAP" = 'PLAI & MAHLAP\r\nbut not renewed membership with PLAI and MAHLAP for the past 2 years.' ,
+"PASLI" = 'PLAI & PASLI' ,
+"NA" = 'PLAI (PLAI-BRLC)' ,
+"NA" = 'PLAI , CoLiNet' ,
+"PGLL ASLP SFA" = 'PLAI / PGLL / ASLP / SFA' ,
+"NA" = 'PLAI and Bicol Region Librarians Council' ,
+"NA" = 'PLAI and CLAI' ,
+"MAHLAP" = 'PLAI and MAHLAP' ,
+"MAHLAP" = 'PLAI AND MAHLAP' ,
+"NA" = 'PLAI and MASTLINET' ,
+"PAARL" = 'PLAI and Paarl' ,
+"PAARL" = 'PLAI and PAARL' ,
+"PASLI" = 'PLAI and PASLI' ,
+"SFA" = 'PLAI and SFA' ,
+"ASLP" = 'plai aslp' ,
+"PAARL" = 'PLAI PAARL CAMANAVA' ,
+"PAARL" = 'PLAI PAARL PNULISAA  Asso of Laguna Librarians' ,
+"PGLL SFA" = 'PLAI PGLL SFA' ,
+"NA" = 'PLAI STRLC, ALLPI\r\nPAARL (but have not yet renewed)' ,
+"NA" = 'PLAI WVRLC' ,
+"ASLP PAARL" = 'PLAI\r\nASLP\r\nPAARL' ,
+"PATLS" = 'Plai\r\nCodhlis\r\nPatls' ,
+"NA" = 'PLAI\r\nFORATL' ,
+"MAHLAP" = 'PLAI\r\nMAHLAP' ,
+"PAARL" = 'plai\r\npaarl' ,
+"PAARL" = 'Plai\r\nPaarl' ,
+"PAARL" = 'PLAI\r\nPAARL' ,
+"PAARL" = 'PLAI\r\nPAARL\r\nAASDI' ,
+"PAARL ASLP" = 'PLAI\r\nPAARL\r\nASLP' ,
+"PAARL" = 'PLAI\r\nPAARL\r\nLAQueP-LInc' ,
+"PAARL PATLS" = 'PLAI\r\nPAARL\r\nPATLS' ,
+"PAARL" = 'Plai\r\nPaarl\r\nQCLC' ,
+"PAARL SFA" = 'plai\r\nPaarl\r\nSfa\r\nAasdi\r\nKbp' ,
+"PASLI" = 'PLAI\r\nPASLI' ,
+"PASLI" = 'PLAI\r\nPASLI\r\nLLAI\r\nPLAI -ARMM' ,
+"NA" = 'PLAI\r\nPNULISAA' ,
+"NA" = 'PLAI\r\nPUP LSAA' ,
+"NA" = 'PLAI\r\nSOCOLA' ,
+"NA" = 'PLAI,' ,
+"NA" = 'PLAI,  NIRLC' ,
+"PAARL" = 'PLAI,  PAARL' ,
+"NA" = 'PLAI, AASDI' ,
+"ALAP" = 'PLAI, ALAP' ,
+"ASFA" = 'PLAI, ALINET, ASFA, IAMSLIC' ,
+"NA" = 'PLAI, ALINET, MASTLINET, LLAI' ,
+"NA" = 'PLAI, ALINET, PLAI CRLC' ,
+"ALPS" = 'PLAI, ALPS' ,
+"ALPS" = 'PLAI, ALPS, LAQueP-LInc' ,
+"PASLI" = 'PLAI, and PASLI' ,
+"ALPS" = 'PLAI, APLIN, ALPS' ,
+"NA" = 'PLAI, APPLI, NEFLI' ,
+"ASLP" = 'PLAI, ASLP' ,
+"ASLP SFA" = 'PLAI, ASLP, ICA, SFA' ,
+"ASLP SLA" = 'PLAI, ASLP, SLA' ,
+"ASLP" = 'PLAI, ASLP, UELISAAI' ,
+"NA" = 'PLAI, ASSDI' ,
+"NA" = 'PLAI, BPLAI' ,
+"NA" = 'PLAI, BRLC' ,
+"NA" = 'PLAI, Cagayan Valley Regional Librarians Association, Inc.; Nueva Vizcaya Librarians Association' ,
+"NA" = 'PLAI, Cavite Librarians Inc.,' ,
+"NA" = 'PLAI, CLAI' ,
+"MAHLAP" = 'Plai, clai, mahlap' ,
+"PAARL" = 'PLAI, CLAI, PAARL' ,
+"NA" = 'PLAI, CLLA, Inc.' ,
+"NA" = 'PLAI, DACUN' ,
+"NA" = 'PLAI, DACUN, MASTLINET' ,
+"NA" = 'PLAI, ICA, UPLSAA' ,
+"NA" = 'PLAI, LAQUEPLINC,' ,
+"MAHLAP" = 'Plai, mahlap' ,
+"MAHLAP" = 'PLAI, MAHLAP' ,
+"NA" = 'PLAI, MUNPARLAS' ,
+"ASLP" = 'PLAI, MUNPARLAS, ASLP' ,
+"NA" = 'PLAI, OMLA' ,
+"PAARL" = 'plai, paarl' ,
+"PAARL" = 'Plai, paarl' ,
+"PAARL" = 'PLAi, PAARL' ,
+"PAARL" = 'PLAI, pAARL' ,
+"PAARL" = 'PLAI, PAARL' ,
+"PAARL" = 'PLAI, PAARL and QCLC' ,
+"PAARL" = 'PLAI, PAARL,' ,
+"PAARL" = 'PLAI, PAARL, AASDI' ,
+"PAARL" = 'PLAI, PAARL, ABCLI, QCLC' ,
+"PAARL" = 'PLAI, PAARL, ALA' ,
+"PAARL ALAP" = 'PLAI, PAARL, ALAP' ,
+"PAARL ALAP" = 'PLAI, PAARL, ALAP, AASDI' ,
+"PAARL ALAP" = 'PLAI, PAARL, ALAP, ALLPI' ,
+"PAARL ASLP" = 'PLAI, PAARL, ASLP' ,
+"PAARL ASLP MAHLAP SLA" = 'PLAI, PAARL, ASLP, MAHLAP, SLA' ,
+"PAARL" = 'PLAI, PAARL, BLAI' ,
+"PAARL MAHLAP" = 'PLAI, PAARL, MAHLAP' ,
+"PAARL MAHLAP" = 'PLAI, PAARL, MAHLAP (Local), MLA (international)' ,
+"PAARL PGLL" = 'PLAI, PAARL, PGLL, PUPLSAA' ,
+"PAARL" = 'PLAI, PAARL, PLAI-STRLC' ,
+"PAARL" = 'PLAI, PAARL, PNULISAA' ,
+"PAARL" = 'PLAI, PAARL, PUPLSAA' ,
+"PAARL" = 'PLAI, PAARL, QCLC (Quezon City Library Consortium)' ,
+"PAARL" = 'PLAI, PAARL, RIzalenos Librarians Association, USTLISAA' ,
+"PAARL" = 'PLAI, PAARL, RLA Rizalenos Librarians Association' ,
+"PAARL" = 'PLAI, PAARL, UPLSAA' ,
+"PAARL" = 'PLAI, PAARL, UPLSAA, PUPLSAA' ,
+"PAARL" = 'PLAI, PAARL, Vanuatu Librarians\' Association' ,
+"PAARL" = 'PLAI, PAARL, Western Visayas Association of Museums' ,
+"PAARL PASLI" = 'PLAI, PAARL,PASLI' ,
+"PAARL PASLI" = 'PLAI, PADLI' ,
+"PAARL PASLI" = 'PLAI, PASLI' ,
+"PAARL PASLI" = 'PLAI, PASLI, LAQueP-LInc, MUNPARLAS' ,
+"PAARL PASLI" = 'PLAI, PASLI, UPLSAA' ,
+"PAARL PATLS" = 'PLAI, PATLS' ,
+"PAARL PATLS SFA" = 'Plai, patls, sfa' ,
+"PAARL PATLS SFA" = 'PLAI, PATLS, SFA' ,
+"NA" = 'Plai, pearl, clla' ,
+"PGLL" = 'PLAI, PGLL' ,
+"PGLL" = 'PLAI, PGLL, and LLIWA' ,
+"PGLL SFA" = 'PLAI, PGLL, SFA' ,
+"NA" = 'Plai, Plai-Central luzon, Nueva ecija librarian association' ,
+"NA" = 'PLAI, PLAI-NIRLC' ,
+"NA" = 'PLAI, PLAI-RLC' ,
+"ALPS" = 'PLAI, PLAI-STRLC, ALPS, LAQueP-LInc' ,
+"NA" = 'PLAI, PLAI-STRLC, OMLA' ,
+"NA" = 'PLAI, PLAI - IRLC' ,
+"NA" = 'PLAI, PSPL, BOLA' ,
+"NA" = 'plai, regional council for librarians' ,
+"SFA" = 'PLAI, SFA' ,
+"NA" = 'PLAI, UPLSAA' ,
+"ASLP" = 'PLAI,ASLP' ,
+"PASLI" = 'PLAI,PASLI' ,
+"PATLS" = 'PLAI,PATLS, CODHLIS' ,
+"NA" = 'PLAI.' ,
+"PAARL" = 'PLAI; PAARL' ,
+"PAARL" = 'PLAI< PAARL' ,
+"PASLI" = 'Plain and Philippine Association of DepEd Librarians,Inc. (PADLI)' ,
+"NA" = 'PLAL' ,
+"NA" = 'PNULISAA' ,
+"NA" = 'QCLC' ,
+"NA" = 'RLA' ,
+"NA" = 'UPLSAA')
+# Create new columns: theses, books, electronic_materials, law_materials, datasets, institutional_files
+dataset <- transform(dataset, 
+                     PAARL = grepl("PAARL",affiliation), 
+                     PASLI = grepl("PASLI", affiliation), 
+                     ASLP = grepl("ASLP", affiliation), 
+                     MAHLAP = grepl("MAHLAP", affiliation), 
+                     PATLS = grepl("PATLS", affiliation),
+                     ALAP = grepl("ALAP", affiliation),
+                     ALPS = grepl("ALPS", affiliation),
+                     PGLL = grepl("PGLL", affiliation),
+                     SFA = grepl("SFA", affiliation))
+# Summarize by counting the TRUE values per materials
+dataset %>%
+summarise("PAARL" = sum(PAARL == TRUE), 
+          "PASLI" = sum(PASLI == TRUE), 
+          "ASLP" = sum(ASLP == TRUE), 
+          "MAHLAP" = sum(MAHLAP == TRUE), 
+          "ALAP" = sum(ALAP == TRUE), 
+          "ALPS" = sum(ALPS == TRUE), 
+          "PGLL" = sum(PGLL == TRUE), 
+          "SFA" = sum(SFA == TRUE)) %>%
+gather() %>%
+ggplot(aes(x = key, y= value, fill = key)) + geom_col(position = "dodge") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Materials", "n=196") + guides(fill = "none") + scale_fill_viridis_d() + theme(axis.text.x = element_text(angle = 90)) +
+geom_text(x = 1, y = 10, label = "7", colour = "black", size = 4) + 
+geom_text(x = 2, y = 9, label = "6", colour = "black", size = 4) + 
+geom_text(x = 3, y = 25, label = "23", colour = "black", size = 4) + 
+geom_text(x = 4, y = 21, label = "18", colour = "black", size = 4) + 
+geom_text(x = 5, y = 131, label = "128", colour = "black", size = 4) + 
+geom_text(x = 6, y = 40, label = "37", colour = "black", size = 4) + 
+geom_text(x = 7, y = 9, label = "6", colour = "black", size = 4) + 
+geom_text(x = 8, y = 14, label = "11", colour = "black", size = 4) 
+```
+
+## Kindly indicate what factors influence your decision when it comes to joining a professional organization?
+
+```{r}
+# Create a clean_corpus function 
+clean_corpus <- function(corpus) {
+    corpus <- tm_map(corpus, removePunctuation)
+    corpus <- tm_map(corpus, removeNumbers)
+    corpus <- tm_map(corpus, content_transformer(tolower))
+    corpus <- tm_map(corpus, removeWords, c(stopwords("en")))
+    corpus <- tm_map(corpus, stripWhitespace)
+    return(corpus)
+}
+# Create a text corpus
+factor.corpus <- dataset$factor %>%
+VectorSource() %>%
+VCorpus()
+# Clean the created corpus
+factor.corpus <- clean_corpus(factor.corpus)
+# Create a dendogram
+factor.corpus %>%
+TermDocumentMatrix() %>%
+removeSparseTerms(sparse = 0.985) %>%
+as.matrix() %>%
+dist() %>%
+hclust() %>%
+plot()
+```
+
+```{r}
+glimpse(dataset)
+```
+
+```{r}
+# Save the updated dataset
+write_rds(dataset, "LibrarianCensus.rds")
+```
 
 
