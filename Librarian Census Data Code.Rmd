@@ -2,7 +2,7 @@
 title: "Librarian Census Data Code"
 author: "Dan Anthony Dorado"
 date: "`r Sys.Date()`"
-output: word_document
+output: html_document
 toc: TRUE
 ---
 # Abstract
