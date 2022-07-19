@@ -518,12 +518,12 @@ plot()
 # Change the factor type
 dataset$education <- as.factor(dataset$education)
 # Recode responses
-levels(dataset$education)[1] <- "Bachelor degree"
-levels(dataset$education)[2] <- "BLIS"
-levels(dataset$education)[3] <- "MLIS"
-levels(dataset$education)[4] <- "Master degree"
-levels(dataset$education)[5] <- "Ph.D"
-levels(dataset$education)[6] <- "Juris Doctor"
+levels(dataset$education)[1] <- "BLIS"
+levels(dataset$education)[2] <- "Bachelor degree"
+levels(dataset$education)[3] <- "Ph.D"
+levels(dataset$education)[4] <- "Juris Doctor"
+levels(dataset$education)[5] <- "MLIS"
+levels(dataset$education)[6] <- "Master degree"
 # Rearrange the responses
 dataset$education <- fct_relevel(dataset$education, 'BLIS', 'Bachelor degree', 'MLIS', 'Master degree', 'Ph.D', 'Juris Doctor')
 # Graph the data
@@ -566,10 +566,10 @@ ggplot(aes(x = enrolled, fill = enrolled)) + geom_bar() + geom_text(aes(label = 
 dataset$completing <- as.factor(dataset$completing)
 # Recode responses
 levels(dataset$completing)[1] <- "BLIS"
-levels(dataset$completing)[2] <- "Masters non-MLIS"
-levels(dataset$completing)[3] <- "MLIS"
-levels(dataset$completing)[4] <- "Ph.D."
-levels(dataset$completing)[5] <- "Juris Doctor"
+levels(dataset$completing)[2] <- "Ph.D."
+levels(dataset$completing)[3] <- "Juris Doctor"
+levels(dataset$completing)[4] <- "MLIS"
+levels(dataset$completing)[5] <- "Masters non-MLIS"
 levels(dataset$completing)[6] <- "Post Graduate LIS"
 levels(dataset$completing)[7] <- "Post Graduate non-LIS"
 levels(dataset$completing)[8] <- "Short Course"
@@ -615,10 +615,10 @@ colnames(dataset)[40] <- "after5years"
 # Change the factor type
 dataset$after5years <- as.factor(dataset$after5years)
 # Recode responses
-levels(dataset$after5years)[1] <- "Master non-MLIS"
-levels(dataset$after5years)[2] <- "MLIS"
-levels(dataset$after5years)[3] <- "Ph.D."
-levels(dataset$after5years)[4] <- "Juris Doctor"
+levels(dataset$after5years)[1] <- "Ph.D."
+levels(dataset$after5years)[2] <- "Juris Doctor"
+levels(dataset$after5years)[3] <- "MLIS"
+levels(dataset$after5years)[4] <- "Master non-MLIS" 
 levels(dataset$after5years)[5] <- "Post Graduate LIS"
 levels(dataset$after5years)[6] <- "Post Graduate non-LIS"
 levels(dataset$after5years)[7] <- "Short Course"
