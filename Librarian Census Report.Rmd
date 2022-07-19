@@ -1,19 +1,86 @@
 ---
-title: "Librarian Census Report"
+title: "2019 Librarian Survey Report"
 author: "UP School of Library and Information Studies"
 date: "`r Sys.Date()`"
-output: 
-  word_document: 
+output:
+  word_document:
     fig_width: 8
+    toc: yes
+  pdf_document:
+    toc: yes
 ---
+\newpage
 
-The University of the Philippines School of Library and Information Studies (UPSLIS) conducted a study of Philippine Librarians from November 2018 to October 2019. This endeavor was the first-ever wide-scale study undertaken to collect the occupational profile of Librarians in the Philippines. The survey was designed to be an online questionnaire via Mentimeter and was presented for dissemination during the 2018 Philippine Librarians Association Inc. (PLAI) Congress at Novotel in Quezon City. To further disseminate, the link was posted on the UPSLIS Facebook account and was shared to library association group pages. A total of 685 responses were recorded which is only 7.5% of the almost 9000 registered librarians in the Philippines but can be used in making statistical inference with a 4% margin of error.
+# About This Report
+
+The **University of the Philippines School of Library and Information Studies (UPSLIS)** conducted a study of Philippine Librarians from November 2018 to October 2019. This endeavor was the first-ever wide-scale study undertaken to collect the occupational profile of Librarians in the Philippines. The study was motivated by the fact that we do not have any baseline data about Philippine Librarians. While we may assume that more women practice librarianship in the Philippines than males, we do not have empirical data to support such a claim. UPSLIS hopes that this report, together with the raw dataset and manual on how to process and analyze the dataset, will:
+
+-	Gain a deeper insight into the current state of librarians in the Philippines
+-	Enable other researchers to validate and extend this current project to create more follow-up and comprehensive studies
+-	Serve as a benchmarking tool for future LIS research
+-	Create opportunities for collaboration with other researchers not only in the LIS field but with other disciplines as well
+-	Assist policymakers and decision-makers in drafting and creating policies and guidelines that would affect the LIS profession in the Philippines.
+
+UPSLIS also endeavors to conduct another census in five to six years to provide a complete longitudinal picture of the changes and development in the profession.
+
+# Background
+In 2015, UPSLIS conducted a study to determine the status of archives and records management practitioners in the Philippines. The survey was funded by the National Committee on Archives of the National Commission for Culture and the Arts. The data gathered served as the first comprehensive data of archives and records managers concerning their education, work, and prospects, similar to what this study endeavored to accomplish. The findings became the basis for subsequent training programs for records managers and archivists. The UPSLIS endeavored to conduct the same for librarians with the said accomplishment. 
+
+In 2017, Taban developed a tool for occupational profiling specific to librarians through her undergraduate thesis Occupational Census Profiling Tool for Librarians in the Philippines. This research serves as the tool for this study. Taban's research was guided by Labaw's framework in the formulation of questionnaire design. Labaw posits that the basic principle is for the respondents to define which questions, words, and concepts, among others, can be included. This framework indicates that several pre-tests should be conducted to determine a suitable questionnaire design. With three sets of questionnaires tested among several respondents, the study determined the appropriate ordering of questions, categorization of questions, suitable options or responses, and the like. The third cycle or the third run of the questionnaire was the most appropriate set of questions used in this project.
+
+# Methodology
+
+The study adopted an exploratory, descriptive approach to provide a snapshot of an occupational baseline profile of Filipino Librarians. The project proponents aimed to highlight patterns, outliers, and other observations through the summarization and visualization of the data.
+
+## Instrument
+
+The questionnaire was developed in 2017 through Taban's thesis. Its goal was to determine the minimum set of questions that would comprise an occupational census questionnaire for librarians. She subsequently tested three questionnaires among several respondents, for which she made revisions based on determining issues and concerns. This study is the first wide-scale survey using the tool, and it may still be revised for improvement. The online tool also has its pros and cons. While it may be convenient distribution, it can also be limited to only those with internet access and digital technologies. We can also interpret outliers as possible incorrect input due to the respondents' unfamiliarity with the tool.
+
+## Data Gathering
+
+The researchers opted to use Mentimeter to provide a real-time visualization report of the data gathered. Also, as presented at a conference, it was hoped that a quick view of the data could be delivered after the participants responded. However, due to lack of time, the questionnaire was only introduced during the 2018 PLAI Congress along with the link. The researchers also posted the survey link in the official Facebook group of the different PLAI regional councils to collect responses from librarians who were not present during the PLAI Congress 2018. A total of 684 responses were recorded that can be used in making statistical inferences with a 4% margin of error.
+
+## Data Cleaning and Preparation
+
+Data collected using Mentimeter were exported via CSV. Upon inspection, the dataset produces a data frame with 685 rows of individual data and 67 variables.
+
+```{r Preview, warning=FALSE, include=FALSE}
+library(tidyverse)
+```
+
+```{r Colnames, echo=FALSE, warning=FALSE}
+colnames(read_csv("librariancensus.csv"))
+```
+
+Rows that only contained timestamp data were deleted as these represents individuals who tried to answer the census but never push through answering majority of the questions. Most of the variables were summarized by creating a bar graph. Numerical variables were summarized by:
+
+- defining a class interval and creating a bar graph
+- through a histogram
+- through overlapping a boxplot, violinplot, and dotplot
+
+Statiscal measures were reported unfiltered but the visualizations have the outliers trimmed so that the graphs will not be skewed. Refer to the Codebook on how the numerical variables were trimmed.
+
+For open-ended questions, the researchers use a text-mining approach to analyze the general sentiment of the respondents. Word count and proximity measures were used to generate a dendrogram.
+
+The researchers also created additional variables to ease the process of summarizing the data. For example, a variable `age_group` was created to convert the numerical nature of librarians age to the following categories:
+
+- 21 to 30
+- 31 to 40
+- 41 to 50
+- 51 to 60
+- Greater than 60
+
+The data were processed using:
+
+- RStudio 2022.02.3+492 "Prairie Trillium" Release (1db809b8323ba0a87c148d16eb84efe39a8e7785, 2022-05-20) for Windows
+- R-4.2.1 language
+- tidyverse package version 1.3.2
+- tm package version:	0.7-8
 
 ```{r Ingress, include=FALSE}
 # Load needed package
 library(tidyverse)
 library(tm)
-library(infer)
 
 #Load the raw "librariancensus.csv" dataset
 dataset <- read_rds("librariancensus.rds")
@@ -25,7 +92,9 @@ options(digits=4)
 set.seed(12)
 ```
 
-# Question: Are you currently a licensed librarian (R.A. 9246) ?
+# Summary of responses
+
+## Question: Are you currently a licensed librarian (R.A. 9246) ?
 
 -   Yes, I have a valid and up-to-date PRC license for librarians
 -   No, I have not renewed my license
@@ -35,7 +104,7 @@ set.seed(12)
 # Graph the data
 dataset %>%
 filter(!is.na(licensed)) %>%
-ggplot(aes(x = licensed, fill = licensed)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: PRC License", "n=660") + guides(fill = "none") + scale_fill_viridis_d()
+ggplot(aes(x = licensed, fill = licensed)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: PRC License", "n=659") + guides(fill = "none") + scale_fill_viridis_d()
 ```
 
 ## Question: Are you currently residing in the Philippines?
@@ -48,7 +117,7 @@ ggplot(aes(x = licensed, fill = licensed)) + geom_bar() + geom_text(aes(label = 
 # Graph the data
 dataset %>%
 filter(!is.na(philippines)) %>%
-ggplot(aes(x = philippines, fill = philippines)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Residency", "n=658") + guides(fill = "none") + scale_fill_viridis_d()
+ggplot(aes(x = philippines, fill = philippines)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Residency", "n=657") + guides(fill = "none") + scale_fill_viridis_d()
 ```
 
 ## Question: Kindly indicate which gender you identify the most
@@ -62,7 +131,7 @@ ggplot(aes(x = philippines, fill = philippines)) + geom_bar() + geom_text(aes(la
 # Graph the data
 dataset %>%
 filter(!is.na(gender)) %>%
-ggplot(aes(x = gender, fill = gender)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Gender", "n=660") + guides(fill = "none") + scale_fill_viridis_d()
+ggplot(aes(x = gender, fill = gender)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Gender", "n=659") + guides(fill = "none") + scale_fill_viridis_d()
 ```
 
 ## Question: Kindly indicate your age
@@ -75,7 +144,7 @@ summary(dataset$age)
 ```{r Age, echo=FALSE}
 dataset %>%
 filter(!is.na(age_group)) %>%
-ggplot(aes(x = age_group, fill = age_group)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Age", "n=656") + guides(fill = "none") + scale_fill_viridis_d()
+ggplot(aes(x = age_group, fill = age_group)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Age", "n=655") + guides(fill = "none") + scale_fill_viridis_d()
 ```
 
 ```{r Histogram Age, echo=FALSE, warning=FALSE}
@@ -83,7 +152,7 @@ dataset %>%
 filter(!is.na(age)) %>%
 filter(age > 20) %>%
 filter(age < 65) %>%
-ggplot(aes(x = age, fill = age)) + geom_histogram(bins = 8) + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Age", "n=647") + guides(fill = "none") + scale_fill_viridis_d()
+ggplot(aes(x = age, fill = age)) + geom_histogram(bins = 8) + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Age", "n=646") + guides(fill = "none") + scale_fill_viridis_d()
 ```
 
 ```{r Boxplot Age, echo=FALSE}
@@ -92,7 +161,7 @@ dataset %>%
 filter(!is.na(age)) %>%
 filter(age > 20) %>%
 filter(age < 65) %>%
-ggplot(aes(x = 1, y = age)) + geom_violin(adjust=.7) + geom_boxplot(width = .1, fill = "black") + geom_dotplot(aes(y = age), binaxis = "y", binwidth = .3, stackdir = "center", alpha = .5) + stat_summary(fun = mean, geom = "point", fill = "white", shape = 21, size = 2.5) + coord_flip() + theme(axis.text.y = element_blank()) + xlab("Distribution") + ylab("Age") + ggtitle("Distribution of Responses: Age(Boxplot)", "n=647")
+ggplot(aes(x = 1, y = age)) + geom_violin(adjust=.7) + geom_boxplot(width = .1, fill = "black") + geom_dotplot(aes(y = age), binaxis = "y", binwidth = .3, stackdir = "center", alpha = .5) + stat_summary(fun = mean, geom = "point", fill = "white", shape = 21, size = 2.5) + coord_flip() + theme(axis.text.y = element_blank()) + xlab("Distribution") + ylab("Age") + ggtitle("Distribution of Responses: Age(Boxplot)", "n=646")
 ```
 
 ## Question: Are you currently employed and/or working?
@@ -106,7 +175,7 @@ ggplot(aes(x = 1, y = age)) + geom_violin(adjust=.7) + geom_boxplot(width = .1, 
 # Graph the data
 dataset %>%
 filter(!is.na(working)) %>%
-ggplot(aes(x = working, fill = working)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Currently Working", "n=658") + guides(fill = "none") + scale_fill_viridis_d()
+ggplot(aes(x = working, fill = working)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Currently Working", "n=657") + guides(fill = "none") + scale_fill_viridis_d()
 ```
 
 ## Question: Kindly indicate the setting, field or industry you are primarily working in
@@ -122,7 +191,7 @@ ggplot(aes(x = working, fill = working)) + geom_bar() + geom_text(aes(label = ..
 # Graph the data
 dataset %>%
 filter(!is.na(industry)) %>%
-ggplot(aes(x = industry, fill = industry)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Industry", "n=652") + guides(fill = "none") + scale_fill_viridis_d()
+ggplot(aes(x = industry, fill = industry)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Industry", "n=651") + guides(fill = "none") + scale_fill_viridis_d()
 ```
 
 ## Question: How long have you been working as a professional after passing the licensure exam for librarians (cumulative years)
@@ -136,7 +205,7 @@ summary(dataset$years_service)
 # Graph the data: bar graph
 dataset %>%
 filter(!is.na(years_service_group)) %>%
-ggplot(aes(x = years_service_group, fill = years_service_group)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Years of Service", "n=649") + guides(fill = "none") + scale_fill_viridis_d()
+ggplot(aes(x = years_service_group, fill = years_service_group)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Years of Service", "n=648") + guides(fill = "none") + scale_fill_viridis_d()
 ```
 
 ```{r Histogram Years of Service, echo=FALSE}
@@ -144,7 +213,7 @@ ggplot(aes(x = years_service_group, fill = years_service_group)) + geom_bar() + 
 dataset %>%
 filter(!is.na(years_service)) %>%
 filter(years_service < 35) %>%
-ggplot(aes(x = years_service, fill = years_service)) + geom_histogram(bins = 8) + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Years of Service", "n=649") + guides(fill = "none") + scale_fill_viridis_d()
+ggplot(aes(x = years_service, fill = years_service)) + geom_histogram(bins = 8) + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Years of Service", "n=648") + guides(fill = "none") + scale_fill_viridis_d()
 ```
 
 ```{r Boxplot Years of Service, echo=FALSE}
@@ -152,7 +221,7 @@ ggplot(aes(x = years_service, fill = years_service)) + geom_histogram(bins = 8) 
 dataset %>%
 filter(!is.na(years_service)) %>%
 filter(years_service < 35) %>%
-ggplot(aes(x = 1, y = years_service)) + geom_violin(adjust=.8) + geom_boxplot(width = .1, fill = "black") + geom_dotplot(aes(y = years_service), binaxis = "y", binwidth = .13, stackdir = "center", alpha = .5) + stat_summary(fun = mean, geom = "point", fill = "white", shape = 21, size = 2.5) + coord_flip() + theme(axis.text.y = element_blank()) + xlab("Distribution") + ylab("Years of Service") + ggtitle("Distribution of Responses: Years of Service(Boxplot)", "n=649")
+ggplot(aes(x = 1, y = years_service)) + geom_violin(adjust=.8) + geom_boxplot(width = .1, fill = "black") + geom_dotplot(aes(y = years_service), binaxis = "y", binwidth = .13, stackdir = "center", alpha = .5) + stat_summary(fun = mean, geom = "point", fill = "white", shape = 21, size = 2.5) + coord_flip() + theme(axis.text.y = element_blank()) + xlab("Distribution") + ylab("Years of Service") + ggtitle("Distribution of Responses: Years of Service(Boxplot)", "n=648")
 ```
 
 ## Question: Kindly indicate the type of institution (in terms of ownership) you are primarily working in
@@ -166,7 +235,7 @@ ggplot(aes(x = 1, y = years_service)) + geom_violin(adjust=.8) + geom_boxplot(wi
 # Graph the data
 dataset %>%
 filter(!is.na(institution)) %>%
-ggplot(aes(x = institution, fill = institution)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Institution", "n=644") + guides(fill = "none") + scale_fill_viridis_d()
+ggplot(aes(x = institution, fill = institution)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Institution", "n=643") + guides(fill = "none") + scale_fill_viridis_d()
 ```
 
 ## Question: Kindly indicate your current tenure status
@@ -181,7 +250,7 @@ ggplot(aes(x = institution, fill = institution)) + geom_bar() + geom_text(aes(la
 # Graph the data
 dataset %>%
 filter(!is.na(tenure)) %>%
-ggplot(aes(x = tenure, fill = tenure)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Tenure", "n=640") + guides(fill = "none") + scale_fill_viridis_d()
+ggplot(aes(x = tenure, fill = tenure)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Tenure", "n=639") + guides(fill = "none") + scale_fill_viridis_d()
 ```
 
 ## Question: Kindly indicate your current monthly gross salary or income range (before deductions)
@@ -196,7 +265,7 @@ summary(dataset$gross_salary)
 # Graph the data: bar graph
 dataset %>% 
 filter(!is.na(gross_salary_group)) %>%
-ggplot(aes(x = gross_salary_group, fill = gross_salary_group)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Gross Salary", "n=563") + guides(fill = "none") + scale_fill_viridis_d()
+ggplot(aes(x = gross_salary_group, fill = gross_salary_group)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Gross Salary", "n=562") + guides(fill = "none") + scale_fill_viridis_d()
 ```
 
 ```{r Histogram Gross Salary, echo=FALSE}
@@ -205,7 +274,7 @@ dataset %>%
 filter(!is.na(gross_salary)) %>%
 filter(gross_salary > 10) %>%
 filter(gross_salary < 65) %>%
-ggplot(aes(x = gross_salary, fill = gross_salary)) + geom_histogram(bins = 10) + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Gross Salary", "n=509") + guides(fill = "none") + scale_fill_viridis_d()
+ggplot(aes(x = gross_salary, fill = gross_salary)) + geom_histogram(bins = 10) + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Gross Salary", "n=508") + guides(fill = "none") + scale_fill_viridis_d()
 ```
 
 ```{r Boxplot Gross Salary, echo=FALSE}
@@ -214,7 +283,7 @@ dataset %>%
 filter(!is.na(gross_salary)) %>%
 filter(gross_salary > 10) %>%
 filter(gross_salary < 65) %>%
-ggplot(aes(x = 1, y = gross_salary)) + geom_violin(adjust=2) + geom_boxplot(width = .1, fill = "black") + geom_dotplot(aes(y = gross_salary), binaxis = "y", binwidth = .3, stackdir = "center", alpha = .5) + stat_summary(fun = mean, geom = "point", fill = "white", shape = 21, size = 2.5) + coord_flip() + theme(axis.text.y = element_blank()) + xlab("Distribution") + ylab("Gross Salary") + ggtitle("Distribution of Responses: Gross Salary(Boxplot)", "n=509")
+ggplot(aes(x = 1, y = gross_salary)) + geom_violin(adjust=2) + geom_boxplot(width = .1, fill = "black") + geom_dotplot(aes(y = gross_salary), binaxis = "y", binwidth = .3, stackdir = "center", alpha = .5) + stat_summary(fun = mean, geom = "point", fill = "white", shape = 21, size = 2.5) + coord_flip() + theme(axis.text.y = element_blank()) + xlab("Distribution") + ylab("Gross Salary") + ggtitle("Distribution of Responses: Gross Salary(Boxplot)", "n=508")
 ```
 
 ## Kindly indicate your current monthly net salary or income range (after deductions)
@@ -229,7 +298,7 @@ summary(dataset$net_salary)
 # Graph the data: bar graph
 dataset %>%
 filter(!is.na(net_salary_group)) %>%
-ggplot(aes(x = net_salary_group, fill = net_salary_group)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Net Salary", "n=551") + guides(fill = "none") + scale_fill_viridis_d()
+ggplot(aes(x = net_salary_group, fill = net_salary_group)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Net Salary", "n=550") + guides(fill = "none") + scale_fill_viridis_d()
 ```
 
 ```{r Histogram Net Salary, echo=FALSE}
@@ -238,7 +307,7 @@ dataset %>%
 filter(!is.na(net_salary)) %>%
 filter(net_salary > 10) %>%
 filter(net_salary < 65) %>%
-ggplot(aes(x = net_salary, fill = net_salary)) + geom_histogram(bins = 10) + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Net Salary", "n=447") + guides(fill = "none") + scale_fill_viridis_d()
+ggplot(aes(x = net_salary, fill = net_salary)) + geom_histogram(bins = 10) + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Net Salary", "n=446") + guides(fill = "none") + scale_fill_viridis_d()
 ```
 
 ```{r Boxplot Net Salary, echo=FALSE}
@@ -247,7 +316,7 @@ dataset %>%
 filter(!is.na(net_salary)) %>%
 filter(net_salary > 10) %>%
 filter(net_salary < 65) %>%
-ggplot(aes(x = 1, y = net_salary)) + geom_violin(adjust=2) + geom_boxplot(width = .1, fill = "black") + geom_dotplot(aes(y = net_salary), binaxis = "y", binwidth = .3, stackdir = "center", alpha = .5) + stat_summary(fun = mean, geom = "point", fill = "white", shape = 21, size = 2.5) + coord_flip() + theme(axis.text.y = element_blank()) + xlab("Distribution") + ylab("Net Salary") + ggtitle("Distribution of Responses: Net Salary(Boxplot)", "n=447")
+ggplot(aes(x = 1, y = net_salary)) + geom_violin(adjust=2) + geom_boxplot(width = .1, fill = "black") + geom_dotplot(aes(y = net_salary), binaxis = "y", binwidth = .3, stackdir = "center", alpha = .5) + stat_summary(fun = mean, geom = "point", fill = "white", shape = 21, size = 2.5) + coord_flip() + theme(axis.text.y = element_blank()) + xlab("Distribution") + ylab("Net Salary") + ggtitle("Distribution of Responses: Net Salary(Boxplot)", "n=446")
 ```
 
 ## Question: Kindly indicate additional benefits, if any (please check all that apply)
@@ -264,7 +333,7 @@ ggplot(aes(x = 1, y = net_salary)) + geom_violin(adjust=2) + geom_boxplot(width 
 dataset %>%
 summarise("Shuttle service" = sum(shuttle == TRUE), "Night differential" = sum(night_differential == TRUE), "Paid leaves" = sum(paid_leaves == TRUE), "HMO" = sum(hmo == TRUE), "Allowances" = sum(allowances == TRUE), "No benefits" = sum(no_benefits == TRUE)) %>%
 gather() %>%
-ggplot(aes(x = key, y = value, fill = key)) + geom_col(position = "dodge") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Benefits", "n=631") + guides(fill = "none") + scale_fill_viridis_d() + theme(axis.text.x = element_text(angle = 90)) +
+ggplot(aes(x = key, y = value, fill = key)) + geom_col(position = "dodge") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Benefits", "n=630") + guides(fill = "none") + scale_fill_viridis_d() + theme(axis.text.x = element_text(angle = 90)) +
 geom_text(x = 1, y = 254, label = "244", colour = "black", size = 4) + 
 geom_text(x = 2, y = 269, label = "259", family = "serif", colour = "black", size = 4) +
 geom_text(x = 3, y = 38, label = "28", family = "serif", colour = "black", size = 4) +
@@ -277,7 +346,7 @@ geom_text(x = 6, y = 46, label = "36", family = "serif", colour = "black", size 
 # Graph the data
 dataset %>%
 filter(!is.na(benefits6)) %>%
-ggplot(aes(x = benefits6, fill = benefits6)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Benefits", "n=631") + guides(fill = "none") + scale_fill_viridis_d()
+ggplot(aes(x = benefits6, fill = benefits6)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Benefits", "n=630") + guides(fill = "none") + scale_fill_viridis_d()
 ```
 
 ## Question: Other benefits not mentioned in the previous page
@@ -326,7 +395,7 @@ plot()
 dataset %>%
 summarise("These" = sum(theses == TRUE), "Books" = sum(books == TRUE), "Electronic Materials" = sum( electronic_materials == TRUE), "Law Materials" = sum(law_materials == TRUE), "Datasets" = sum(datasets == TRUE), "Archives" = sum(archives == TRUE), "Institutional Materials" = sum(institutional_files == TRUE)) %>%
 gather() %>%
-ggplot(aes(x = key, y= value, fill = key)) + geom_col(position = "dodge") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Materials", "n=543") + guides(fill = "none") + scale_fill_viridis_d() + theme(axis.text.x = element_text(angle = 90)) +
+ggplot(aes(x = key, y= value, fill = key)) + geom_col(position = "dodge") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Materials", "n=542") + guides(fill = "none") + scale_fill_viridis_d() + theme(axis.text.x = element_text(angle = 90)) +
 geom_text(x = 1, y = 298, label = "288", colour = "black", size = 4) + 
 geom_text(x = 2, y = 459, label = "449", colour = "black", size = 4) + 
 geom_text(x = 3, y = 66, label = "56", colour = "black", size = 4) +
@@ -348,7 +417,7 @@ geom_text(x = 7, y = 304, label = "294", colour = "black", size = 4)
 # Graph the data
 dataset %>%
 filter(!is.na(position)) %>%
-ggplot(aes(x = position, fill = position)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Position", "n=579") + guides(fill = "none") + scale_fill_viridis_d()
+ggplot(aes(x = position, fill = position)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Position", "n=578") + guides(fill = "none") + scale_fill_viridis_d()
 ```
 
 ## Question: Within the next five (5) years, do you see your self working in the same industry?
@@ -361,7 +430,7 @@ ggplot(aes(x = position, fill = position)) + geom_bar() + geom_text(aes(label = 
 # Graph the data
 dataset %>%
 filter(!is.na(fiveyears)) %>%
-ggplot(aes(x = fiveyears, fill = fiveyears)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: 5-year plan", "n=586") + guides(fill = "none") + scale_fill_viridis_d()
+ggplot(aes(x = fiveyears, fill = fiveyears)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: 5-year plan", "n=585") + guides(fill = "none") + scale_fill_viridis_d()
 ```
 
 ## Question: If your answer was NO or MAYBE in the previous page, indicate the field you wish to pursue
@@ -406,7 +475,7 @@ plot()
 # Graph the data
 dataset %>%
 filter(!is.na(education)) %>%
-ggplot(aes(x = education, fill = education)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Highest Educational Attainment", "n=581") + guides(fill = "none") + scale_fill_viridis_d()
+ggplot(aes(x = education, fill = education)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Highest Educational Attainment", "n=580") + guides(fill = "none") + scale_fill_viridis_d()
 ```
 
 ## Question: Are you currently enrolled in formal studies? (Short Courses, Certificate Program, Diploma Program, Master Program, PhD)
@@ -418,7 +487,7 @@ ggplot(aes(x = education, fill = education)) + geom_bar() + geom_text(aes(label 
 # Graph the data
 dataset %>%
 filter(!is.na(enrolled)) %>%
-ggplot(aes(x = enrolled, fill = enrolled)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Currently Enroled", "n=580") + guides(fill = "none") + scale_fill_viridis_d()
+ggplot(aes(x = enrolled, fill = enrolled)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Currently Enroled", "n=579") + guides(fill = "none") + scale_fill_viridis_d()
 ```
 
 ## Question: If your answer was YES, indicate the degree you are currently completing
@@ -436,7 +505,7 @@ ggplot(aes(x = enrolled, fill = enrolled)) + geom_bar() + geom_text(aes(label = 
 # Graph the data
 dataset %>%
 filter(!is.na(completing)) %>%
-ggplot(aes(x = completing, fill = completing)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Current Enrollment", "n=287") + guides(fill = "none") + theme(axis.text.x = element_text(angle = 90)) + scale_fill_viridis_d()
+ggplot(aes(x = completing, fill = completing)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Current Enrollment", "n=286") + guides(fill = "none") + theme(axis.text.x = element_text(angle = 90)) + scale_fill_viridis_d()
 ```
 
 ## Question: Are you planning to study again in a formal university setting within the next five (5) years?
@@ -449,7 +518,7 @@ ggplot(aes(x = completing, fill = completing)) + geom_bar() + geom_text(aes(labe
 # Graph the data
 dataset %>%
 filter(!is.na(study_again)) %>%
-ggplot(aes(x = study_again, fill = study_again)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Current Enrollment", "n=574") + guides(fill = "none") + scale_fill_viridis_d()
+ggplot(aes(x = study_again, fill = study_again)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Current Enrollment", "n=573") + guides(fill = "none") + scale_fill_viridis_d()
 ```
 
 ## Question: If your answer was YES, kindly provide the degree you wish to study within the next five (5) years
@@ -467,7 +536,7 @@ ggplot(aes(x = study_again, fill = study_again)) + geom_bar() + geom_text(aes(la
 # Graph the data
 dataset %>%
 filter(!is.na(after5years)) %>%
-ggplot(aes(x = after5years, fill = after5years)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Plan within 5 years", "n=431") + guides(fill = "none") + theme(axis.text.x = element_text(angle = 90)) + scale_fill_viridis_d()
+ggplot(aes(x = after5years, fill = after5years)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Plan within 5 years", "n=430") + guides(fill = "none") + theme(axis.text.x = element_text(angle = 90)) + scale_fill_viridis_d()
 ```
 
 ## Question: Where do you usually acquire your CPD trainings in LIS? Kindly check all that applies
@@ -482,7 +551,7 @@ ggplot(aes(x = after5years, fill = after5years)) + geom_bar() + geom_text(aes(la
 dataset %>%
 summarise("in-house trainings" = sum(inhouse == TRUE), "government facilitated" = sum(government == TRUE), "private entities" = sum(private == TRUE), "Have not attended CPD Trainings" = sum(xattended == TRUE)) %>%
 gather() %>%
-ggplot(aes(x = key, y= value, fill = key)) + geom_col(position = "dodge") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: CPD Training", "n=563") + guides(fill = "none") + scale_fill_viridis_d() + theme(axis.text.x = element_text(angle = 90)) +
+ggplot(aes(x = key, y= value, fill = key)) + geom_col(position = "dodge") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: CPD Training", "n=562") + guides(fill = "none") + scale_fill_viridis_d() + theme(axis.text.x = element_text(angle = 90)) +
 geom_text(x = 1, y = 199, label = "189", colour = "black", size = 4) + 
 geom_text(x = 2, y = 103, label = "93", colour = "black", size = 4) + 
 geom_text(x = 3, y = 168, label = "158", colour = "black", size = 4) +
@@ -501,7 +570,7 @@ geom_text(x = 4, y = 434, label = "424", colour = "black", size = 4)
 dataset %>%
 summarise("personal funding" = sum(support_self == TRUE), "government facilitated" = sum(support_government == TRUE), "private entities" = sum(support_private == TRUE), "Have not attended CPD Trainings" = sum(support_xattended == TRUE)) %>%
 gather() %>%
-ggplot(aes(x = key, y= value, fill = key)) + geom_col(position = "dodge") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: CPD Support", "n=563") + guides(fill = "none") + scale_fill_viridis_d() + theme(axis.text.x = element_text(angle = 90)) +
+ggplot(aes(x = key, y= value, fill = key)) + geom_col(position = "dodge") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: CPD Support", "n=562") + guides(fill = "none") + scale_fill_viridis_d() + theme(axis.text.x = element_text(angle = 90)) +
 geom_text(x = 1, y = 162, label = "152", colour = "black", size = 4) +
 geom_text(x = 2, y = 372, label = "362", colour = "black", size = 4) +
 geom_text(x = 3, y = 300, label = "290", colour = "black", size = 4) +
@@ -520,7 +589,7 @@ geom_text(x = 4, y = 264, label = "254", colour = "black", size = 4)
 # Graph the data
 dataset %>%
 filter(!is.na(cpdsatisfaction)) %>%
-ggplot(aes(x = cpdsatisfaction, fill = cpdsatisfaction)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: CPD Satisfaction", "n=563") + guides(fill = "none") + theme(axis.text.x = element_text(angle = 90)) + scale_fill_viridis_d()
+ggplot(aes(x = cpdsatisfaction, fill = cpdsatisfaction)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: CPD Satisfaction", "n=562") + guides(fill = "none") + theme(axis.text.x = element_text(angle = 90)) + scale_fill_viridis_d()
 ```
 
 ## Question: Kindly indicate any challenges you encounter when fulfilling the required CPD trainings
@@ -606,14 +675,14 @@ plot()
 # Graph the data
 dataset %>%
 filter(!is.na(location)) %>%
-ggplot(aes(x = location, fill = location)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Location", "n=538") + guides(fill = "none") + theme(axis.text.x = element_text(angle = 90)) + scale_fill_viridis_d()
+ggplot(aes(x = location, fill = location)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Location", "n=537") + guides(fill = "none") + theme(axis.text.x = element_text(angle = 90)) + scale_fill_viridis_d()
 ```
 
 ```{r LVM, echo=FALSE}
 # Graph the data
 dataset %>%
 filter(!is.na(lvm)) %>%
-ggplot(aes(x = lvm, fill = lvm)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Location", "n=538") + guides(fill = "none") + theme(axis.text.x = element_text(angle = 90)) + scale_fill_viridis_d()
+ggplot(aes(x = lvm, fill = lvm)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Location", "n=537") + guides(fill = "none") + theme(axis.text.x = element_text(angle = 90)) + scale_fill_viridis_d()
 ```
 
 ## Question: Have you moved out of your original / permanent residence in order to work on your current work place?
@@ -625,7 +694,7 @@ ggplot(aes(x = lvm, fill = lvm)) + geom_bar() + geom_text(aes(label = ..count..)
 # Graph the data
 dataset %>%
 filter(!is.na(worktravel)) %>%
-ggplot(aes(x = worktravel, fill = worktravel)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + guides(fill = "none") + ggtitle("Distribution of Responses: Work Travel", "n=566") + scale_fill_viridis_d()
+ggplot(aes(x = worktravel, fill = worktravel)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + guides(fill = "none") + ggtitle("Distribution of Responses: Work Travel", "n=565") + scale_fill_viridis_d()
 ```
 
 ## Is Filipino / Tagalog your native language?
@@ -637,7 +706,7 @@ ggplot(aes(x = worktravel, fill = worktravel)) + geom_bar() + geom_text(aes(labe
 # Graph the data
 dataset %>%
 filter(!is.na(filipino)) %>%
-ggplot(aes(x = filipino, fill = filipino)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + guides(fill = "none") + ggtitle("Distribution of Responses: Filipino as First Language", "n=551") + scale_fill_viridis_d()
+ggplot(aes(x = filipino, fill = filipino)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + guides(fill = "none") + ggtitle("Distribution of Responses: Filipino as First Language", "n=550") + scale_fill_viridis_d()
 ```
 
 ## Kindly check the local languages or dialects you can speak on a conversational level other than Filipino / Tagalog
@@ -654,7 +723,7 @@ ggplot(aes(x = filipino, fill = filipino)) + geom_bar() + geom_text(aes(label = 
 ```{r Dialect, echo=FALSE}
 dataset %>%
 filter(!is.na(dialect)) %>%
-ggplot(aes(x = dialect, fill = dialect)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + guides(fill = "none") + ggtitle("Distribution of Responses: Dialect", "n=392") + scale_fill_viridis_d()
+ggplot(aes(x = dialect, fill = dialect)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + guides(fill = "none") + ggtitle("Distribution of Responses: Dialect", "n=391") + scale_fill_viridis_d()
 ```
 
 ## Kindly indicate any foreign languages or dialects you can speak on a conversational level other than English (if any)
@@ -690,7 +759,7 @@ term.frequency[1:10]
 # Graph the data
 dataset %>%
 filter(!is.na(type)) %>%
-ggplot(aes(x = type, fill = type)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + guides(fill = "none") + ggtitle("Distribution of Responses: Library Type", "n=474") + scale_fill_viridis_d()
+ggplot(aes(x = type, fill = type)) + geom_bar() + geom_text(aes(label = ..count..), stat = "count", vjust = -0.2, colour = "black") + xlab("Distribution of responses") + ylab("Frequency") + guides(fill = "none") + ggtitle("Distribution of Responses: Library Type", "n=473") + scale_fill_viridis_d()
 ```
 
 ## Other than being a librarian, what other roles do you serve in your institution/ organization?
@@ -751,7 +820,7 @@ plot()
 
 ## Kindly indicate your primary job / designation inside the library
 
-```{r designation, echo=FALSE}
+```{r designation, echo=FALSE, fig.height=6}
 # Create a clean_corpus function 
 clean_corpus <- function(corpus) {
     corpus <- tm_map(corpus, removePunctuation)
@@ -790,7 +859,7 @@ summarise("PAARL" = sum(PAARL == TRUE),
           "PGLL" = sum(PGLL == TRUE), 
           "SFA" = sum(SFA == TRUE)) %>%
 gather() %>%
-ggplot(aes(x = key, y= value, fill = key)) + geom_col(position = "dodge") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Materials", "n=196") + guides(fill = "none") + scale_fill_viridis_d() + theme(axis.text.x = element_text(angle = 90)) +
+ggplot(aes(x = key, y= value, fill = key)) + geom_col(position = "dodge") + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Materials", "n=195") + guides(fill = "none") + scale_fill_viridis_d() + theme(axis.text.x = element_text(angle = 90)) +
 geom_text(x = 1, y = 10, label = "7", colour = "black", size = 4) + 
 geom_text(x = 2, y = 9, label = "6", colour = "black", size = 4) + 
 geom_text(x = 3, y = 25, label = "23", colour = "black", size = 4) + 
@@ -828,6 +897,5 @@ dist() %>%
 hclust() %>%
 plot()
 ```
-@Dorado2022
 
 
