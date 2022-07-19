@@ -144,7 +144,7 @@ ggplot(aes(x = years_service_group, fill = years_service_group)) + geom_bar() + 
 dataset %>%
 filter(!is.na(years_service)) %>%
 filter(years_service < 35) %>%
-ggplot(aes(x = years_service, , fill = years_service)) + geom_histogram(bins = 8) + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Years of Service", "n=649") + guides(fill = "none") + scale_fill_viridis_d()
+ggplot(aes(x = years_service, fill = years_service)) + geom_histogram(bins = 8) + xlab("Distribution of responses") + ylab("Frequency") + ggtitle("Distribution of Responses: Years of Service", "n=649") + guides(fill = "none") + scale_fill_viridis_d()
 ```
 
 ```{r Boxplot Years of Service, echo=FALSE}
@@ -828,5 +828,6 @@ dist() %>%
 hclust() %>%
 plot()
 ```
+@Dorado2022
 
 
