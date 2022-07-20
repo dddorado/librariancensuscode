@@ -1,32 +1,31 @@
 ---
 title: "2019 Librarian Survey Report"
-author: "UP School of Library and Information Studies"
-date: "`r Sys.Date()`"
+author:
+  - name: Dan Anthony Dorado
+    email: dan@slis.upd.edu.ph
+    affiliation: UP School of Library and Information Studies
+  - name: Kathleen Lourdes Obille
+    email: kate@slis.upd.edu.ph
+    affiliation: UP School of Library and Information Studies
+abstract: |
+  The University of the Philippines School of Library and Information Studies (UPSLIS) conducted a study of Philippine Librarians from November 2018 to October 2019. This endeavor was the first-ever wide-scale study undertaken to collect the occupational profile of Librarians in the Philippines. The survey was designed to be an online questionnaire via Mentimeter. It was presented for dissemination during the 2018 Philippine Librarians Association Inc. (PLAI) Congress at Novotel in Quezon City. To further disseminate, the link was posted on the UPSLIS Facebook account and was shared on library association group pages. A total of 684 responses were recorded that can serve as a population estimate with a 4% margin of error.
+date: 2021
 output:
   word_document:
     fig_width: 8
     toc: yes
   pdf_document:
     toc: yes
+bibliography: citations.bib
+link-citations: yes
+csl: apa.csl
 ---
 \newpage
-
-# About This Report
-
-The **University of the Philippines School of Library and Information Studies (UPSLIS)** conducted a study of Philippine Librarians from November 2018 to October 2019. This endeavor was the first-ever wide-scale study undertaken to collect the occupational profile of Librarians in the Philippines. The study was motivated by the fact that we do not have any baseline data about Philippine Librarians. While we may assume that more women practice librarianship in the Philippines than males, we do not have empirical data to support such a claim. UPSLIS hopes that this report, together with the raw dataset and manual on how to process and analyze the dataset, will:
-
--	Gain a deeper insight into the current state of librarians in the Philippines
--	Enable other researchers to validate and extend this current project to create more follow-up and comprehensive studies
--	Serve as a benchmarking tool for future LIS research
--	Create opportunities for collaboration with other researchers not only in the LIS field but with other disciplines as well
--	Assist policymakers and decision-makers in drafting and creating policies and guidelines that would affect the LIS profession in the Philippines.
-
-UPSLIS also endeavors to conduct another census in five to six years to provide a complete longitudinal picture of the changes and development in the profession.
 
 # Background
 In 2015, UPSLIS conducted a study to determine the status of archives and records management practitioners in the Philippines. The survey was funded by the National Committee on Archives of the National Commission for Culture and the Arts. The data gathered served as the first comprehensive data of archives and records managers concerning their education, work, and prospects, similar to what this study endeavored to accomplish. The findings became the basis for subsequent training programs for records managers and archivists. The UPSLIS endeavored to conduct the same for librarians with the said accomplishment. 
 
-In 2017, Taban developed a tool for occupational profiling specific to librarians through her undergraduate thesis Occupational Census Profiling Tool for Librarians in the Philippines. This research serves as the tool for this study. Taban's research was guided by Labaw's framework in the formulation of questionnaire design. Labaw posits that the basic principle is for the respondents to define which questions, words, and concepts, among others, can be included. This framework indicates that several pre-tests should be conducted to determine a suitable questionnaire design. With three sets of questionnaires tested among several respondents, the study determined the appropriate ordering of questions, categorization of questions, suitable options or responses, and the like. The third cycle or the third run of the questionnaire was the most appropriate set of questions used in this project.
+In 2017, @Taban developed a tool for occupational profiling specific to librarians through her undergraduate thesis Occupational Census Profiling Tool for Librarians in the Philippines. This research serves as the tool for this study. Taban's research was guided by @Labaw's framework in the formulation of questionnaire design. Labaw posits that the basic principle is for the respondents to define which questions, words, and concepts, among others, can be included. This framework indicates that several pre-tests should be conducted to determine a suitable questionnaire design. With three sets of questionnaires tested among several respondents, the study determined the appropriate ordering of questions, categorization of questions, suitable options or responses, and the like. The third cycle or the third run of the questionnaire was the most appropriate set of questions used in this project.
 
 # Methodology
 
@@ -34,7 +33,7 @@ The study adopted an exploratory, descriptive approach to provide a snapshot of 
 
 ## Instrument
 
-The questionnaire was developed in 2017 through Taban's thesis. Its goal was to determine the minimum set of questions that would comprise an occupational census questionnaire for librarians. She subsequently tested three questionnaires among several respondents, for which she made revisions based on determining issues and concerns. This study is the first wide-scale survey using the tool, and it may still be revised for improvement. The online tool also has its pros and cons. While it may be convenient distribution, it can also be limited to only those with internet access and digital technologies. We can also interpret outliers as possible incorrect input due to the respondents' unfamiliarity with the tool.
+The questionnaire was developed in 2017 through @Taban's thesis. Its goal was to determine the minimum set of questions that would comprise an occupational census questionnaire for librarians. She subsequently tested three questionnaires among several respondents, for which she made revisions based on determining issues and concerns. This study is the first wide-scale survey using the tool, and it may still be revised for improvement. The online tool also has its pros and cons. While it may be convenient distribution, it can also be limited to only those with internet access and digital technologies. We can also interpret outliers as possible incorrect input due to the respondents' unfamiliarity with the tool.
 
 ## Data Gathering
 
@@ -42,7 +41,7 @@ The researchers opted to use Mentimeter to provide a real-time visualization rep
 
 ## Data Cleaning and Preparation
 
-Data collected using Mentimeter were exported via CSV. Upon inspection, the dataset produces a data frame with 685 rows of individual data and 67 variables.
+Data collected using Mentimeter were exported via CSV. Upon inspection, the dataset produces a data frame with 684 rows of individual data and 67 variables.
 
 ```{r Preview, warning=FALSE, include=FALSE}
 library(tidyverse)
@@ -52,7 +51,7 @@ library(tidyverse)
 colnames(read_csv("librariancensus.csv"))
 ```
 
-Rows that only contained timestamp data were deleted as these represents individuals who tried to answer the census but never push through answering majority of the questions. Most of the variables were summarized by creating a bar graph. Numerical variables were summarized by:
+Rows that only contained timestamp data were deleted as these represents individuals who tried to answer the census but never push through answering majority of the questions. Most of the categorical variables were converted from `character type` to `factor type` to reflect the nature of the questionnaire. Categorical variables were also summarized using a bar graphs to highlight the nominal frequency of the responses. Numerical variables were summarized by:
 
 - defining a class interval and creating a bar graph
 - through a histogram
@@ -72,10 +71,10 @@ The researchers also created additional variables to ease the process of summari
 
 The data were processed using:
 
-- RStudio 2022.02.3+492 "Prairie Trillium" Release (1db809b8323ba0a87c148d16eb84efe39a8e7785, 2022-05-20) for Windows
-- R-4.2.1 language
-- tidyverse package version 1.3.2
-- tm package version:	0.7-8
+- RStudio 2022.02.3+492 "Prairie Trillium" Release (1db809b8323ba0a87c148d16eb84efe39a8e7785, 2022-05-20) for Windows [@RStudio]
+- R-4.2.1 language [@R]
+- tidyverse package version 1.3.2 [@tidyverse]
+- tm package version:	0.7-8 [@tm]
 
 ```{r Ingress, include=FALSE}
 # Load needed package
@@ -92,6 +91,7 @@ options(digits=4)
 set.seed(12)
 ```
 
+\newpage
 # Summary of responses
 
 ## Question: Are you currently a licensed librarian (R.A. 9246) ?
@@ -898,4 +898,26 @@ hclust() %>%
 plot()
 ```
 
+\newpage
+# Report's Reproducibility and Reuse
 
+Knowledge is derived from a cumulative process that hinges on the repeated investigation of the same questions from many angles. Because each study builds on the insights produced by prior studies, the efficiency of the scientific process can be substantially compromised if the literature includes studies that report illusory results, either intentionally or unintentionally. Similarly, scientific efficiency will be compromised if failures to produce common findings are misdiagnosed as failures to reproduce earlier results or failures to replicate earlier studies when they are failures of earlier findings to generalize [@Bollen].UPSLIS hopes that this report, together with the [raw dataset and manual on how to process and analyze the dataset](https://doi.org/10.5281/zenodo.6864788), will:
+
+-    Gain a deeper insight into the current state of librarians in the Philippines
+-    Enable other researchers to validate and extend this current project to create more follow-up and comprehensive studies
+-    Serve as a benchmarking tool for future LIS research
+-    Create opportunities for collaboration with other researchers not only in the LIS field but with other disciplines as well
+-    Assist policymakers and decision-makers in drafting and creating policies and guidelines that would affect the LIS profession in the Philippines.
+
+UPSLIS also endeavors to conduct another census in five to six years to provide a complete longitudinal picture of the changes and development in the profession.
+
+## Accompanying Materials
+
+- [Raw Dataset](https://zenodo.org/record/6864788/files/librariancensus.csv?download=1): `librariancensus.csv`
+- [Processed Dataset](https://zenodo.org/record/6864788/files/LibrarianCensus.rds?download=1): `LibrarianCensus.rds`(An R object that can be read in a R environment)
+- [R markdown manual](https://zenodo.org/record/6864788/files/Librarian%20Census%20Data%20Code.Rmd?download=1): `Librarian Census Data Code.Rmd` (R Document that can be loaded in an R environment to access the R codes used in processing and analyzing the dataset)
+- [Word Document Manual](https://zenodo.org/record/6864788/files/Librarian-Census-Data-Code.docx?download=1): `Librarian-Census-Data-Code.docx` (A MS Word document version of the R Markdown manual)
+- [HTML File Manual](https://zenodo.org/record/6864788/files/Librarian-Census-Data-Code.html?download=1): `Librarian-Census-Data-Code.html` (A HTML version of the R Markdown manual)
+
+\newpage
+# Reference
