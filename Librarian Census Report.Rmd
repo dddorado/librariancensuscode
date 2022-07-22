@@ -1,21 +1,30 @@
 ---
 title: "2019 Librarian Survey Report"
 author:
-  - name: Dan Anthony Dorado
-    email: dan@slis.upd.edu.ph
-    affiliation: UP School of Library and Information Studies
-  - name: Kathleen Lourdes Obille
-    email: kate@slis.upd.edu.ph
-    affiliation: UP School of Library and Information Studies
-abstract: |
-  The University of the Philippines School of Library and Information Studies (UPSLIS) conducted a study of Philippine Librarians from November 2018 to October 2019. This endeavor was the first-ever wide-scale study undertaken to collect the occupational profile of Librarians in the Philippines. The survey was designed to be an online questionnaire via Mentimeter. It was presented for dissemination during the 2018 Philippine Librarians Association Inc. (PLAI) Congress at Novotel in Quezon City. To further disseminate, the link was posted on the UPSLIS Facebook account and was shared on library association group pages. A total of 684 responses were recorded that can serve as a population estimate with a 4% margin of error.
-date: 2021
+- name: Dan Anthony Dorado
+  email: dan@slis.upd.edu.ph
+  affiliation: UP School of Library and Information Studies
+- name: Kathleen Lourdes Obille
+  email: kate@slis.upd.edu.ph
+  affiliation: UP School of Library and Information Studies
 output:
+  html_document:
+    toc: no
+    df_print: paged
+  pdf_document:
+    toc: yes
   word_document:
     fig_width: 8
     toc: yes
-  pdf_document:
-    toc: yes
+abstract: "The University of the Philippines School of Library and Information Studies
+  (UPSLIS) conducted a study of Philippine Librarians from November 2018 to October
+  2019. This endeavor was the first-ever wide-scale study undertaken to collect the
+  occupational profile of Librarians in the Philippines. The survey was designed to
+  be an online questionnaire via Mentimeter. It was presented for dissemination during
+  the 2018 Philippine Librarians Association Inc. (PLAI) Congress at Novotel in Quezon
+  City. To further disseminate, the link was posted on the UPSLIS Facebook account
+  and was shared on library association group pages. A total of 684 responses were
+  recorded that can serve as a population estimate with a 4% margin of error.\n"
 bibliography: citations.bib
 link-citations: yes
 csl: apa.csl
@@ -79,6 +88,7 @@ The data were processed using:
 ```{r Ingress, include=FALSE}
 # Load needed package
 library(tidyverse)
+library(plotly)
 library(tm)
 
 #Load the raw "librariancensus.csv" dataset
@@ -161,7 +171,7 @@ dataset %>%
 filter(!is.na(age)) %>%
 filter(age > 20) %>%
 filter(age < 65) %>%
-ggplot(aes(x = 1, y = age)) + geom_violin(adjust=.7) + geom_boxplot(width = .1, fill = "black") + geom_dotplot(aes(y = age), binaxis = "y", binwidth = .3, stackdir = "center", alpha = .5) + stat_summary(fun = mean, geom = "point", fill = "white", shape = 21, size = 2.5) + coord_flip() + theme(axis.text.y = element_blank()) + xlab("Distribution") + ylab("Age") + ggtitle("Distribution of Responses: Age(Boxplot)", "n=646")
+ggplot(aes(x = 1, y = age)) + geom_violin(adjust=.7) + geom_boxplot(width = .1, fill = "black") + geom_dotplot(aes(y = age), binaxis = "y", binwidth = .4, stackdir = "center", alpha = .5) + stat_summary(fun = mean, geom = "point", fill = "white", shape = 21, size = 2.5) + coord_flip() + theme(axis.text.y = element_blank()) + xlab("Distribution") + ylab("Age") + ggtitle("Distribution of Responses: Age(Boxplot)", "n=646")
 ```
 
 ## Question: Are you currently employed and/or working?
@@ -221,7 +231,7 @@ ggplot(aes(x = years_service, fill = years_service)) + geom_histogram(bins = 8) 
 dataset %>%
 filter(!is.na(years_service)) %>%
 filter(years_service < 35) %>%
-ggplot(aes(x = 1, y = years_service)) + geom_violin(adjust=.8) + geom_boxplot(width = .1, fill = "black") + geom_dotplot(aes(y = years_service), binaxis = "y", binwidth = .13, stackdir = "center", alpha = .5) + stat_summary(fun = mean, geom = "point", fill = "white", shape = 21, size = 2.5) + coord_flip() + theme(axis.text.y = element_blank()) + xlab("Distribution") + ylab("Years of Service") + ggtitle("Distribution of Responses: Years of Service(Boxplot)", "n=648")
+ggplot(aes(x = 1, y = years_service)) + geom_violin(adjust=.8) + geom_boxplot(width = .1, fill = "black") + geom_dotplot(aes(y = years_service), binaxis = "y", binwidth = .19, stackdir = "center", alpha = .5) + stat_summary(fun = mean, geom = "point", fill = "white", shape = 21, size = 2.5) + coord_flip() + theme(axis.text.y = element_blank()) + xlab("Distribution") + ylab("Years of Service") + ggtitle("Distribution of Responses: Years of Service(Boxplot)", "n=648")
 ```
 
 ## Question: Kindly indicate the type of institution (in terms of ownership) you are primarily working in
@@ -283,7 +293,7 @@ dataset %>%
 filter(!is.na(gross_salary)) %>%
 filter(gross_salary > 10) %>%
 filter(gross_salary < 65) %>%
-ggplot(aes(x = 1, y = gross_salary)) + geom_violin(adjust=2) + geom_boxplot(width = .1, fill = "black") + geom_dotplot(aes(y = gross_salary), binaxis = "y", binwidth = .3, stackdir = "center", alpha = .5) + stat_summary(fun = mean, geom = "point", fill = "white", shape = 21, size = 2.5) + coord_flip() + theme(axis.text.y = element_blank()) + xlab("Distribution") + ylab("Gross Salary") + ggtitle("Distribution of Responses: Gross Salary(Boxplot)", "n=508")
+ggplot(aes(x = 1, y = gross_salary)) + geom_violin(adjust=2) + geom_boxplot(width = .1, fill = "black") + geom_dotplot(aes(y = gross_salary), binaxis = "y", binwidth = .5, stackdir = "center", alpha = .5) + stat_summary(fun = mean, geom = "point", fill = "white", shape = 21, size = 2.5) + coord_flip() + theme(axis.text.y = element_blank()) + xlab("Distribution") + ylab("Gross Salary") + ggtitle("Distribution of Responses: Gross Salary(Boxplot)", "n=508")
 ```
 
 ## Kindly indicate your current monthly net salary or income range (after deductions)
@@ -316,7 +326,7 @@ dataset %>%
 filter(!is.na(net_salary)) %>%
 filter(net_salary > 10) %>%
 filter(net_salary < 65) %>%
-ggplot(aes(x = 1, y = net_salary)) + geom_violin(adjust=2) + geom_boxplot(width = .1, fill = "black") + geom_dotplot(aes(y = net_salary), binaxis = "y", binwidth = .3, stackdir = "center", alpha = .5) + stat_summary(fun = mean, geom = "point", fill = "white", shape = 21, size = 2.5) + coord_flip() + theme(axis.text.y = element_blank()) + xlab("Distribution") + ylab("Net Salary") + ggtitle("Distribution of Responses: Net Salary(Boxplot)", "n=446")
+ggplot(aes(x = 1, y = net_salary)) + geom_violin(adjust=2) + geom_boxplot(width = .1, fill = "black") + geom_dotplot(aes(y = net_salary), binaxis = "y", binwidth = .5, stackdir = "center", alpha = .5) + stat_summary(fun = mean, geom = "point", fill = "white", shape = 21, size = 2.5) + coord_flip() + theme(axis.text.y = element_blank()) + xlab("Distribution") + ylab("Net Salary") + ggtitle("Distribution of Responses: Net Salary(Boxplot)", "n=446")
 ```
 
 ## Question: Kindly indicate additional benefits, if any (please check all that apply)
